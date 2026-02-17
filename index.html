@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3QK6CR1BXY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-3QK6CR1BXY');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-Square | Video steams square multiScreen</title>
+    <meta name="description" content="M-Square: Visualização simultânea de múltiplos vídeos com design premium.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="grid-main">
+        <div class="video-grid">
+            <!-- Video 1 -->
+            <div class="video-item border-primary" onclick="toggleMute(event, 'player1')"
+                ondblclick="toggleFullscreen(event, this)">
+                <div class="video-overlay"></div>
+                <iframe id="player1" src="https://www.youtube.com/embed/XWjQEpRrgbE?enablejsapi=1&autoplay=1&mute=1"
+                    allowfullscreen></iframe>
+            </div>
+
+            <!-- Video 2 -->
+            <div class="video-item border-secondary" onclick="toggleMute(event, 'player2')"
+                ondblclick="toggleFullscreen(event, this)">
+                <div class="video-overlay"></div>
+                <iframe id="player2" src="https://www.youtube.com/embed/1kx--gAntwE?enablejsapi=1&autoplay=1&mute=1"
+                    allowfullscreen></iframe>
+            </div>
+
+            <!-- Video 3 -->
+            <div class="video-item border-tertiary" onclick="toggleMute(event, 'player3')"
+                ondblclick="toggleFullscreen(event, this)">
+                <div class="video-overlay"></div>
+                <iframe id="player3" src="https://www.youtube.com/embed/krUGzTq00Z0?enablejsapi=1&autoplay=1&mute=1"
+                    allowfullscreen></iframe>
+            </div>
+
+            <!-- Video 4 -->
+            <div class="video-item border-gradient" onclick="toggleMute(event, 'player4')"
+                ondblclick="toggleFullscreen(event, this)">
+                <div class="video-overlay"></div>
+                <iframe id="player4" src="https://www.youtube.com/embed/YGNIRYKBqdc?enablejsapi=1&autoplay=1&mute=1"
+                    allowfullscreen></iframe>
+            </div>
+        </div>
+    </main>
+
+    <div class="version-badge">V0.10.23</div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        const players = {};
+        const playerIds = ['player1', 'player2', 'player3', 'player4'];
+
+        // YT API Callback
+        function onYouTubeIframeAPIReady() {
+            playerIds.forEach(id => {
+                players[id] = new YT.Player(id, {
+                    events: {
+                        'onReady': (event) => {
+                            event.target.mute();
+                            event.target.playVideo();
+                        }
+                    }
+                });
+            });
+        }
+
+        function toggleFullscreen(e, element) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            if (!document.fullscreenElement) {
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) { // Safari
+                    element.webkitRequestFullscreen();
+                }
+
+                // Ao entrar em fullscreen, garantimos foco de áudio para este player
+                const iframe = element.querySelector('iframe');
+                if (iframe && iframe.id && players[iframe.id]) {
+                    const id = iframe.id;
+                    playerIds.forEach(pId => players[pId]?.mute?.());
+                    players[id]?.unMute?.();
+                    showStatus(id, 'Fullscreen Focus 📺🔊');
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+
+        function toggleMute(e, id) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            const targetPlayer = players[id];
+            if (!targetPlayer || typeof targetPlayer.isMuted !== 'function') return false;
+
+            const isCurrentlyMuted = targetPlayer.isMuted();
+
+            // STEP 1: Always mute everyone first to ensure absolute focus
+            playerIds.forEach(pId => {
+                if (players[pId] && typeof players[pId].mute === 'function') {
+                    players[pId].mute();
+                }
+            });
+
+            // STEP 2: Logic for the focus
+            if (isCurrentlyMuted) {
+                // If it was muted, we want to hear ONLY this one
+                targetPlayer.unMute();
+                showStatus(id, 'Audio Focus 🔊');
+            } else {
+                // If it was already playing audio, now they are all muted
+                showStatus(id, 'All Muted 🔇');
+            }
+
+            return false;
+        }
+
+        function showStatus(id, text) {
+            const container = document.getElementById(id).parentElement;
+            let status = container.querySelector('.status-indicator');
+            if (!status) {
+                status = document.createElement('div');
+                status.className = 'status-indicator';
+                container.appendChild(status);
+            }
+            status.textContent = text;
+            status.classList.add('visible');
+            setTimeout(() => status.classList.remove('visible'), 1500);
+        }
+
+        // Entrance animation
+        document.querySelectorAll('.video-item').forEach((item, index) => {
+            setTimeout(() => {
+                item.style.opacity = "1";
+                item.style.transform = "scale(1)";
+            }, index * 100);
+        });
+    </script>
+</body>
+
+</html>
