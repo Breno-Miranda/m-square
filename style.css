@@ -56,6 +56,14 @@ body {
     gap: 0;
 }
 
+@media (max-width: 768px) {
+    .video-grid {
+        grid-template-columns: 1fr;
+        /* Força uma coluna única no mobile */
+        height: auto;
+    }
+}
+
 .video-item {
     position: relative;
     width: 100%;
@@ -66,6 +74,14 @@ body {
     opacity: 0;
     transform: scale(0.98);
     transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (max-width: 768px) {
+    .video-item {
+        aspect-ratio: 16 / 9;
+        /* Mantém a proporção correta no mobile */
+        height: auto;
+    }
 }
 
 .video-item iframe {
