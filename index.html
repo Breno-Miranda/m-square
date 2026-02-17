@@ -53,6 +53,7 @@
             <div id="inputContainer">
                 <!-- Inputs serão gerados dinamicamente -->
             </div>
+            <button class="btn-add-stream" onclick="addStream()">+ Adicionar outro vídeo</button>
             <div class="modal-footer">
                 <button class="btn-close" onclick="closeModal()">Cancelar</button>
                 <button class="btn-save" onclick="saveSettings()">Salvar Configurações</button>
@@ -60,7 +61,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.26</div>
+    <div class="version-badge">V0.10.27</div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
@@ -130,6 +131,7 @@
         function onYouTubeIframeAPIReady() {
             initApp();
             playerIds.forEach(id => createPlayer(id));
+            triggerEntranceAnimation();
         }
 
         function createPlayer(id) {
@@ -216,6 +218,16 @@
             status.textContent = text;
             status.classList.add('visible');
             setTimeout(() => status.classList.remove('visible'), 1500);
+        }
+
+        // Entrance animation logic
+        function triggerEntranceAnimation() {
+            document.querySelectorAll('.video-item').forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.opacity = "1";
+                    item.style.transform = "scale(1)";
+                }, index * 100);
+            });
         }
     </script>
 </body>
