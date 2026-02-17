@@ -63,12 +63,13 @@
         </div>
     </main>
 
-    <div class="version-badge">V0.10.23</div>
+    <div class="version-badge">V0.10.24</div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         const players = {};
         const playerIds = ['player1', 'player2', 'player3', 'player4'];
+        let lastClickTime = 0;
 
         // YT API Callback
         function onYouTubeIframeAPIReady() {
@@ -78,6 +79,13 @@
                         'onReady': (event) => {
                             event.target.mute();
                             event.target.playVideo();
+                        },
+                        'onStateChange': (event) => {
+                            // Se o vídeo pausar por clique acidental no mobile (YouTube nativo)
+                            // mas o player estiver mutado ou o sistema estiver em grid, forçamos o play
+                            if (event.data === YT.PlayerState.PAUSED) {
+                                event.target.playVideo();
+                            }
                         }
                     }
                 });
@@ -119,6 +127,14 @@
                 e.stopPropagation();
             }
 
+            // Mobile logic: Debounce para evitar double click disparar mute/unmute confuso
+            const now = Date.now();
+            if (now - lastClickTime < 300) {
+                lastClickTime = now;
+                return false;
+            }
+            lastClickTime = now;
+
             const targetPlayer = players[id];
             if (!targetPlayer || typeof targetPlayer.isMuted !== 'function') return false;
 
@@ -135,6 +151,7 @@
             if (isCurrentlyMuted) {
                 // If it was muted, we want to hear ONLY this one
                 targetPlayer.unMute();
+                targetPlayer.playVideo(); // Garante que está tocando ao desmudar
                 showStatus(id, 'Audio Focus 🔊');
             } else {
                 // If it was already playing audio, now they are all muted
