@@ -23,6 +23,13 @@ body {
     height: 100vh;
 }
 
+@media (max-width: 768px) {
+    body {
+        overflow-y: auto;
+        height: auto;
+    }
+}
+
 /* Base Grid */
 .grid-main {
     width: 100vw;
@@ -30,6 +37,15 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+@media (max-width: 768px) {
+    .grid-main {
+        height: auto;
+        min-height: 100vh;
+        padding: 60px 0;
+        /* Espaço para o logo e controle */
+    }
 }
 
 .video-grid {
