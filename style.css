@@ -16,17 +16,32 @@
     --glass-bg: rgba(0, 0, 0, 0.7);
 }
 
+html {
+    overflow-x: hidden;
+}
+
 body {
     background-color: var(--bg-dark);
     color: var(--text-main);
-    overflow: hidden;
-    height: 100vh;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
+/* Desktop: Trava a tela para visualização em grade única */
+@media (min-width: 769px) {
+    body {
+        height: 100vh;
+        overflow: hidden;
+    }
+}
+
+/* Mobile: Habilita rolagem para múltiplos vídeos */
 @media (max-width: 768px) {
     body {
-        overflow-y: auto;
         height: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 
@@ -43,8 +58,11 @@ body {
     .grid-main {
         height: auto;
         min-height: 100vh;
-        padding: 60px 0;
-        /* Espaço para o logo e controle */
+        padding-top: 80px;
+        padding-bottom: 100px;
+        /* Garante que o botão de config não cubra o vídeo */
+        align-items: flex-start;
+        /* Alinha no topo para permitir o crescimento do scroll */
     }
 }
 
