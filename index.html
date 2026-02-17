@@ -49,6 +49,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Gerenciar Streams</h3>
+                <p style="font-size: 0.7rem; color: #666; margin-top: 5px;">Link completo ou apenas o ID do YouTube</p>
             </div>
             <div id="inputContainer">
                 <!-- Inputs serão gerados dinamicamente -->
@@ -61,7 +62,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.29</div>
+    <div class="version-badge">V0.10.30</div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
@@ -119,9 +120,9 @@
             const container = document.getElementById('inputContainer');
             container.innerHTML = ids.map((id, index) => `
                 <div class="input-group">
-                    <label>Vídeo ${index + 1} (YouTube ID)</label>
+                    <label>Vídeo ${index + 1} (Link ou ID)</label>
                     <div class="input-row">
-                        <input type="text" class="stream-input" value="${id}" placeholder="Ex: XWjQEpRrgbE">
+                        <input type="text" class="stream-input" value="${id}" placeholder="Ex: https://www.youtube.com/watch?v=...">
                         ${ids.length > 1 ? `<button class="btn-remove" onclick="removeStream(${index})">🗑</button>` : ''}
                     </div>
                 </div>
@@ -189,12 +190,21 @@
 
         function closeModal() { document.getElementById('settingsModal').style.display = 'none'; }
 
+        function extractYouTubeId(url) {
+            if (!url) return '';
+            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[7].length == 11) ? match[7] : url;
+        }
+
         function saveSettings() {
             const inputs = document.querySelectorAll('.stream-input');
-            const newIds = Array.from(inputs).map(i => i.value.trim()).filter(id => id !== '');
+            const newIds = Array.from(inputs)
+                .map(i => extractYouTubeId(i.value.trim()))
+                .filter(id => id !== '');
 
             if (newIds.length === 0) {
-                alert('Adicione pelo menos um vídeo.');
+                alert('Adicione pelo menos um vídeo válido.');
                 return;
             }
 
