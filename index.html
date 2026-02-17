@@ -60,15 +60,14 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.25</div>
+    <div class="version-badge">V0.10.26</div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        const playerIds = ['player1', 'player2', 'player3', 'player4'];
         let players = {};
+        let playerIds = [];
         let lastClickTime = 0;
 
-        // Canais Default
         const defaultVideos = [
             'XWjQEpRrgbE',
             '1kx--gAntwE',
@@ -76,10 +75,10 @@
             'YGNIRYKBqdc'
         ];
 
-        // Inicialização
         function initApp() {
             const saved = localStorage.getItem('msquare_streams');
             const streamIds = saved ? JSON.parse(saved) : defaultVideos;
+            playerIds = streamIds.map((_, i) => `player${i + 1}`);
             renderGrid(streamIds);
             renderInputs(streamIds);
         }
@@ -88,14 +87,17 @@
             const container = document.getElementById('videoContainer');
             const borders = ['border-primary', 'border-secondary', 'border-tertiary', 'border-gradient'];
 
-            container.innerHTML = ids.map((id, index) => `
-                <div class="video-item ${borders[index]}" onclick="toggleMute(event, 'player${index + 1}')" ondblclick="toggleFullscreen(event, this)">
-                    <div class="video-overlay"></div>
-                    <iframe id="player${index + 1}" 
-                        src="https://www.youtube.com/embed/${id}?enablejsapi=1&autoplay=1&mute=1" 
-                        allowfullscreen></iframe>
-                </div>
-            `).join('');
+            container.innerHTML = ids.map((id, index) => {
+                const bClass = borders[index % borders.length];
+                return `
+                    <div class="video-item ${bClass}" onclick="toggleMute(event, 'player${index + 1}')" ondblclick="toggleFullscreen(event, this)">
+                        <div class="video-overlay"></div>
+                        <iframe id="player${index + 1}" 
+                            src="https://www.youtube.com/embed/${id}?enablejsapi=1&autoplay=1&mute=1" 
+                            allowfullscreen></iframe>
+                    </div>
+                `;
+            }).join('');
         }
 
         function renderInputs(ids) {
@@ -103,17 +105,31 @@
             container.innerHTML = ids.map((id, index) => `
                 <div class="input-group">
                     <label>Vídeo ${index + 1} (YouTube ID)</label>
-                    <input type="text" id="inputV${index}" value="${id}" placeholder="Ex: XWjQEpRrgbE">
+                    <div class="input-row">
+                        <input type="text" class="stream-input" value="${id}" placeholder="Ex: XWjQEpRrgbE">
+                        ${ids.length > 1 ? `<button class="btn-remove" onclick="removeStream(${index})">🗑</button>` : ''}
+                    </div>
                 </div>
             `).join('');
         }
 
-        // YT API Callback
+        function addStream() {
+            const inputs = document.querySelectorAll('.stream-input');
+            const ids = Array.from(inputs).map(i => i.value.trim());
+            ids.push('');
+            renderInputs(ids);
+        }
+
+        function removeStream(index) {
+            const inputs = document.querySelectorAll('.stream-input');
+            const ids = Array.from(inputs).map(i => i.value.trim());
+            ids.splice(index, 1);
+            renderInputs(ids);
+        }
+
         function onYouTubeIframeAPIReady() {
             initApp();
-            playerIds.forEach(id => {
-                createPlayer(id);
-            });
+            playerIds.forEach(id => createPlayer(id));
         }
 
         function createPlayer(id) {
@@ -132,31 +148,30 @@
             });
         }
 
-        // Modal Logic
         function openModal() { document.getElementById('settingsModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('settingsModal').style.display = 'none'; }
 
         function saveSettings() {
-            const newIds = [];
-            for (let i = 0; i < 4; i++) {
-                const val = document.getElementById(`inputV${i}`).value.trim();
-                newIds.push(val || defaultVideos[i]);
+            const inputs = document.querySelectorAll('.stream-input');
+            const newIds = Array.from(inputs).map(i => i.value.trim()).filter(id => id !== '');
+
+            if (newIds.length === 0) {
+                alert('Adicione pelo menos um vídeo.');
+                return;
             }
 
             localStorage.setItem('msquare_streams', JSON.stringify(newIds));
             closeModal();
-
-            // Reload page to re-initialize YT API with new IDs simplified approach for reliability
             window.location.reload();
         }
 
         function toggleFullscreen(e, element) {
             if (e) { e.stopPropagation(); }
+            const iframe = element.querySelector('iframe');
             if (!document.fullscreenElement) {
                 if (element.requestFullscreen) element.requestFullscreen();
                 else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen();
 
-                const iframe = element.querySelector('iframe');
                 if (iframe && players[iframe.id]) {
                     const id = iframe.id;
                     playerIds.forEach(pId => players[pId]?.mute?.());
