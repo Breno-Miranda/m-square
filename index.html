@@ -61,7 +61,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.28</div>
+    <div class="version-badge">V0.10.29</div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
@@ -79,9 +79,25 @@
         function initApp() {
             const saved = localStorage.getItem('msquare_streams');
             const streamIds = saved ? JSON.parse(saved) : defaultVideos;
-            playerIds = streamIds.map((_, i) => `player${i + 1}`);
-            renderGrid(streamIds);
-            renderInputs(streamIds);
+            updateSystemState(streamIds);
+        }
+
+        function updateSystemState(ids) {
+            // Limpa players antigos antes de re-renderizar
+            Object.values(players).forEach(p => {
+                if (p && typeof p.destroy === 'function') p.destroy();
+            });
+            players = {};
+
+            playerIds = ids.map((_, i) => `player${i + 1}`);
+            renderGrid(ids);
+
+            // Inicializa novos players. 
+            // Se a API ainda não estiver pronta, o onYouTubeIframeAPIReady cuidará disso.
+            if (typeof YT !== 'undefined' && YT.Player) {
+                playerIds.forEach(id => createPlayer(id));
+                triggerEntranceAnimation();
+            }
         }
 
         function renderGrid(ids) {
@@ -93,9 +109,7 @@
                 return `
                     <div class="video-item ${bClass}" onclick="toggleMute(event, 'player${index + 1}')" ondblclick="toggleFullscreen(event, this)">
                         <div class="video-overlay"></div>
-                        <iframe id="player${index + 1}" 
-                            src="https://www.youtube.com/embed/${id}?enablejsapi=1&autoplay=1&mute=1" 
-                            allowfullscreen></iframe>
+                        <div id="player${index + 1}"></div> 
                     </div>
                 `;
             }).join('');
@@ -130,12 +144,30 @@
 
         function onYouTubeIframeAPIReady() {
             initApp();
-            playerIds.forEach(id => createPlayer(id));
-            triggerEntranceAnimation();
+            renderInputs(getSavedIds());
         }
 
-        function createPlayer(id) {
-            players[id] = new YT.Player(id, {
+        function getSavedIds() {
+            const saved = localStorage.getItem('msquare_streams');
+            return saved ? JSON.parse(saved) : defaultVideos;
+        }
+
+        function createPlayer(elementId) {
+            const videoId = getSavedIds()[parseInt(elementId.replace('player', '')) - 1];
+            if (!videoId) return;
+
+            players[elementId] = new YT.Player(elementId, {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'mute': 1,
+                    'enablejsapi': 1,
+                    'controls': 0,
+                    'rel': 0,
+                    'iv_load_policy': 3
+                },
                 events: {
                     'onReady': (event) => {
                         event.target.mute();
@@ -150,7 +182,11 @@
             });
         }
 
-        function openModal() { document.getElementById('settingsModal').style.display = 'flex'; }
+        function openModal() {
+            renderInputs(getSavedIds());
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
         function closeModal() { document.getElementById('settingsModal').style.display = 'none'; }
 
         function saveSettings() {
@@ -163,8 +199,8 @@
             }
 
             localStorage.setItem('msquare_streams', JSON.stringify(newIds));
+            updateSystemState(newIds);
             closeModal();
-            window.location.reload();
         }
 
         function toggleFullscreen(e, element) {
@@ -220,7 +256,6 @@
             setTimeout(() => status.classList.remove('visible'), 1500);
         }
 
-        // Entrance animation logic
         function triggerEntranceAnimation() {
             document.querySelectorAll('.video-item').forEach((item, index) => {
                 setTimeout(() => {
@@ -230,6 +265,7 @@
             });
         }
     </script>
+
 </body>
 
 </html>
