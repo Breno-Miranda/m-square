@@ -165,6 +165,93 @@ body {
     opacity: 1;
 }
 
+.btn-delete-video {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 100;
+    opacity: 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.video-item:hover .btn-delete-video {
+    opacity: 1;
+}
+
+.btn-delete-video:hover {
+    background: #ff0000;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+/* Empty Slot Styles */
+.empty-slot {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    gap: 15px;
+}
+
+.empty-slot:hover {
+    background: radial-gradient(circle at center, rgba(131, 58, 180, 0.1) 0%, transparent 70%);
+    border-color: var(--accent-primary);
+    transform: scale(1.02);
+}
+
+.add-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--surface);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: var(--accent-tertiary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: pulseGlow 2s infinite;
+}
+
+.empty-slot span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #666;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0px rgba(252, 176, 69, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(252, 176, 69, 0.3);
+    }
+
+    100% {
+        box-shadow: 0 0 0px rgba(252, 176, 69, 0);
+    }
+}
+
 /* Version Badge */
 .version-badge {
     position: fixed;
@@ -268,23 +355,43 @@ body {
     display: none;
     justify-content: center;
     align-items: center;
+    padding: 20px;
 }
 
 .modal-content {
     background: #111;
     border: 1px solid var(--border-color);
-    padding: 30px;
+    padding: 25px;
     border-radius: 20px;
-    width: 90%;
+    width: 100%;
     max-width: 500px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    position: relative;
+    overflow: hidden;
 }
 
 .modal-header {
     margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-shrink: 0;
+}
+
+.modal-body-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-bottom: 20px;
+}
+
+.modal-body-scroll::-webkit-scrollbar {
+    width: 5px;
+}
+
+.modal-body-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
 }
 
 .input-group {
@@ -314,9 +421,13 @@ body {
 }
 
 .modal-footer {
-    margin-top: 25px;
+    margin-top: auto;
     display: flex;
     gap: 10px;
+    flex-shrink: 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    background: #111;
 }
 
 .btn-save {
@@ -380,9 +491,7 @@ body {
 }
 
 #inputContainer {
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: 5px;
+    margin-bottom: 10px;
 }
 
 #inputContainer::-webkit-scrollbar {
@@ -392,4 +501,144 @@ body {
 #inputContainer::-webkit-scrollbar-thumb {
     background: var(--border-color);
     border-radius: 10px;
+}
+
+/* Search Section Styles */
+.search-section {
+    margin-bottom: 25px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.search-bar input {
+    flex: 1;
+    background: #000;
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.search-bar input:focus {
+    border-color: var(--accent-tertiary);
+}
+
+.search-bar button {
+    background: var(--accent-tertiary);
+    border: none;
+    color: #000;
+    padding: 0 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: transform 0.2s;
+}
+
+.search-bar button:hover {
+    transform: scale(1.05);
+}
+
+.search-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    display: flex;
+    gap: 12px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    align-items: center;
+}
+
+.search-result-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.search-result-item img {
+    width: 60px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.result-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.result-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.result-channel {
+    font-size: 0.7rem;
+    color: #888;
+}
+
+/* API Settings Styles */
+.btn-api-config {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: #666;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: all 0.3s;
+}
+
+.btn-api-config:hover {
+    color: var(--accent-tertiary);
+    border-color: var(--accent-tertiary);
+}
+
+.api-settings-panel {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--border-color);
+    display: flex;
+    gap: 10px;
+}
+
+.api-settings-panel input {
+    flex: 1;
+    background: #000;
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.api-settings-panel button {
+    background: #333;
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
 }

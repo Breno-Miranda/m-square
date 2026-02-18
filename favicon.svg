@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <defs>
+        <linearGradient id="rocketGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#833ab4;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#fcb045;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <path fill="url(#rocketGrad)" d="M12,2C12,2 8,6.8 8,12C8,15.2 9.8,17.2 12,17.2C14.2,17.2 16,15.2 16,12C16,6.8 12,2 12,2M12,15.2C11.1,15.2 10.4,14.5 10.4,13.6C10.4,12.7 11.1,12 12,12C12.9,12 13.6,12.7 13.6,13.6C13.6,14.5 12.9,15.2 12,15.2M10,19C10,19 10,22 12,22C14,22 14,19 14,19L10,19M7,15C7,15 4,16 4,19C4,20 5,21 5,21L7,15M17,15C17,15 20,16 20,19C20,20 19,21 19,21L17,15Z"/>
+</svg>
