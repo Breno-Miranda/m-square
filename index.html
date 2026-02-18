@@ -85,7 +85,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.69</div>
+    <div class="version-badge">V0.10.71</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -140,6 +140,30 @@
         }
 
         function renderGrid(ids) {
+            renderGridHtml(ids);
+            updateGridLayout();
+        }
+
+        function updateGridLayout() {
+            const container = document.getElementById('videoContainer');
+            const nVideos = playerIds.length;
+            const cols = Math.ceil(Math.sqrt(nVideos + 1));
+            const rows = Math.ceil((nVideos + 1) / cols);
+
+            if (window.innerWidth > 768) {
+                container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+                container.style.gap = "0";
+                container.style.padding = "0";
+            } else {
+                container.style.gridTemplateColumns = "1fr";
+                container.style.gridTemplateRows = "auto";
+                container.style.gap = "15px";
+                container.style.padding = "10px";
+            }
+        }
+
+        function renderGridHtml(ids) {
             const container = document.getElementById('videoContainer');
             const borders = ['border-primary', 'border-secondary', 'border-tertiary', 'border-gradient'];
             const nVideos = ids.length;
@@ -148,9 +172,6 @@
             const totalCells = cols * rows;
             const displayIds = [...ids];
             while (displayIds.length < totalCells) displayIds.push(null);
-
-            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
             container.innerHTML = displayIds.map((videoData, index) => {
                 const bClass = borders[index % borders.length];
@@ -422,6 +443,10 @@
         }
 
         document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) muteAllStreams(); });
+        window.addEventListener('resize', () => {
+            updateGridLayout();
+        });
+
         function onYouTubeIframeAPIReady() { initApp(); }
     </script>
     <script src="https://www.youtube.com/iframe_api"></script>
