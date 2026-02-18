@@ -8,7 +8,6 @@
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-
         gtag('config', 'G-3QK6CR1BXY');
     </script>
 
@@ -35,11 +34,14 @@
 
     <main class="grid-main">
         <div id="videoContainer" class="video-grid">
-            <!-- Os vídeos serão injetados via JS ou renderizados inicialmente -->
+            <!-- Os vídeos serão injetados via JS -->
         </div>
     </main>
 
     <div class="floating-control">
+        <button class="btn-mute-all" onclick="globalMuteAll()" title="Silenciar toda a grade">
+            <span>🔇</span>
+        </button>
         <button class="btn-settings" onclick="openModal()">
             <span>⚙️</span> Configurar Canais
         </button>
@@ -49,23 +51,26 @@
     <div id="settingsModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Gerenciar Streams</h3>
+                <h3 id="modalTitle">Gerenciar Streams</h3>
                 <p style="font-size: 0.7rem; color: #666; margin-top: 5px;">Link completo ou apenas o ID do YouTube</p>
             </div>
 
             <div class="modal-body-scroll">
                 <div class="search-section">
                     <div class="search-bar">
-                        <input type="text" id="ytSearchInput" placeholder="Pesquisar vídeos ou lives...">
+                        <input type="text" id="ytSearchInput" placeholder="Pesquise ou cole o link aqui..."
+                            oninput="handleInstantUrl(this.value)">
                         <button onclick="searchYouTube()">🔍</button>
                     </div>
                     <div id="searchResults" class="search-results-list"></div>
                 </div>
 
-                <div id="inputContainer">
-                    <!-- Inputs serão gerados dinamicamente -->
+                <div id="manageSection">
+                    <div id="inputContainer">
+                        <!-- Inputs dinâmicos -->
+                    </div>
+                    <button class="btn-add-stream" onclick="addStream()">+ Adicionar outro vídeo</button>
                 </div>
-                <button class="btn-add-stream" onclick="addStream()">+ Adicionar outro vídeo</button>
             </div>
             <div class="modal-footer">
                 <button class="btn-api-config" onclick="toggleApiSettings()">🔑 API Key</button>
@@ -80,7 +85,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.44</div>
+    <div class="version-badge">V0.10.69</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -104,7 +109,7 @@
     <script>
         let players = {};
         let playerIds = [];
-        let lastClickTime = 0;
+        let clickTimer = null;
 
         const defaultVideos = [
             'XWjQEpRrgbE',
@@ -120,22 +125,15 @@
         }
 
         function updateSystemState(ids) {
-            // Limpa players antigos antes de re-renderizar
-            Object.values(players).forEach(p => {
-                if (p && typeof p.destroy === 'function') p.destroy();
-            });
+            Object.values(players).forEach(p => { if (p && typeof p.destroy === 'function') p.destroy(); });
             players = {};
-
             playerIds = ids.map((_, i) => `player${i + 1}`);
             renderGrid(ids);
 
-            // Inicializa novos players YouTube. 
             if (typeof YT !== 'undefined' && YT.Player) {
                 ids.forEach((videoData, index) => {
                     const info = typeof videoData === 'string' ? { id: videoData, platform: 'youtube' } : videoData;
-                    if (info.platform === 'youtube') {
-                        createPlayer(`player${index + 1}`, info.id);
-                    }
+                    if (info.platform === 'youtube') createPlayer(`player${index + 1}`, info.id);
                 });
                 triggerEntranceAnimation();
             }
@@ -144,46 +142,188 @@
         function renderGrid(ids) {
             const container = document.getElementById('videoContainer');
             const borders = ['border-primary', 'border-secondary', 'border-tertiary', 'border-gradient'];
+            const nVideos = ids.length;
+            const cols = Math.ceil(Math.sqrt(nVideos + 1));
+            const rows = Math.ceil((nVideos + 1) / cols);
+            const totalCells = cols * rows;
+            const displayIds = [...ids];
+            while (displayIds.length < totalCells) displayIds.push(null);
 
-            // Sempre adiciona um slot vazio no final
-            const displayIds = [...ids, null];
+            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
             container.innerHTML = displayIds.map((videoData, index) => {
                 const bClass = borders[index % borders.length];
                 const info = videoData ? (typeof videoData === 'string' ? { id: videoData, platform: 'youtube' } : videoData) : null;
 
                 if (!info || !info.id || info.id.trim() === '') {
-                    return `
-                        <div class="video-item ${bClass} empty-slot" onclick="openModal(true)">
-                            <div class="add-icon-wrapper">+</div>
-                            <span>Adicionar Vídeo</span>
-                        </div>
-                    `;
+                    return `<div class="video-item ${bClass} empty-slot" onclick="openModal('add')">
+                                <div class="add-icon-wrapper">+</div><span>Adicionar Vídeo</span>
+                            </div>`;
                 }
 
                 if (info.platform === 'kick') {
+                    const kId = `kick-${index}`;
                     return `
-                        <div class="video-item ${bClass}" ondblclick="toggleFullscreen(event, this)">
+                        <div class="video-item ${bClass}" id="container-${kId}" data-platform="kick" data-id="${info.id}" data-muted="true">
                             <button class="btn-delete-video" onclick="removeStreamFromGrid(event, ${index})" title="Remover vídeo">✕</button>
-                            <iframe 
-                                src="https://player.kick.com/${info.id}?autoplay=true&muted=true" 
-                                frameborder="0" 
-                                scrolling="no" 
-                                allowfullscreen="true" 
-                                style="width:100%; height:100%;">
+                            <div class="video-overlay" onclick="handleVideoClick(event, this, '${info.id}', 'kick')"></div>
+                            <iframe id="${kId}" src="https://player.kick.com/${info.id}?autoplay=true&muted=true" 
+                                frameborder="0" scrolling="no" allowfullscreen="true" style="width:100%; height:100%;">
                             </iframe>
-                        </div>
-                    `;
+                        </div>`;
                 }
 
+                const pId = `player${index + 1}`;
                 return `
-                    <div class="video-item ${bClass}" onclick="toggleMute(event, 'player${index + 1}')" ondblclick="toggleFullscreen(event, this)">
+                    <div class="video-item ${bClass}" id="container-${pId}" data-platform="youtube" data-id="${pId}" data-muted="true">
                         <button class="btn-delete-video" onclick="removeStreamFromGrid(event, ${index})" title="Remover vídeo">✕</button>
-                        <div class="video-overlay"></div>
-                        <div id="player${index + 1}"></div> 
-                    </div>
-                `;
+                        <div class="video-overlay" onclick="handleVideoClick(event, this, '${pId}', 'youtube')"></div>
+                        <div id="${pId}"></div> 
+                    </div>`;
             }).join('');
+        }
+
+        function handleVideoClick(e, overlay, id, platform) {
+            if (e) e.stopPropagation();
+            const element = overlay.parentElement;
+
+            if (clickTimer) {
+                clearTimeout(clickTimer);
+                clickTimer = null;
+                toggleFullscreen(null, element);
+            } else {
+                clickTimer = setTimeout(() => {
+                    clickTimer = null;
+                    syncPlayerMute(platform, element);
+                }, 300);
+            }
+        }
+
+        function syncPlayerMute(platform, element) {
+            const isMuted = element.getAttribute('data-muted') === 'true';
+            if (isMuted) {
+                setAudioFocus(platform, element);
+            } else {
+                if (platform === 'youtube') {
+                    const p = players[element.getAttribute('data-id')];
+                    if (p) p.mute();
+                } else {
+                    setAudioStateKick(element, true);
+                }
+                element.setAttribute('data-muted', 'true');
+                showStatus(element.getAttribute('id'), 'Muted 🔇');
+            }
+        }
+
+        function setAudioFocus(platform, element) {
+            const elId = element.getAttribute('id');
+            const targetId = platform === 'youtube' ? element.getAttribute('data-id') : element.querySelector('iframe').id;
+
+            muteAllStreams(targetId);
+
+            if (platform === 'youtube') {
+                const p = players[targetId];
+                if (p) { p.unMute(); p.playVideo(); }
+            } else {
+                setAudioStateKick(element, false);
+            }
+            element.setAttribute('data-muted', 'false');
+            showStatus(elId, 'Audio Focus 🔊');
+        }
+
+        function setAudioStateKick(element, shouldMute) {
+            const iframe = element.querySelector('iframe');
+            if (!iframe) return;
+            element.setAttribute('data-muted', shouldMute ? 'true' : 'false');
+
+            // Controle MULTICAST via postMessage (Zero Reload)
+            // Enviamos múltiplos tipos de payloads para garantir compatibilidade
+            const commands = [
+                { type: 'mute', value: shouldMute },
+                { method: shouldMute ? 'mute' : 'unmute' },
+                { command: shouldMute ? 'mute' : 'unmute' },
+                { method: 'setVolume', value: shouldMute ? 0 : 1 },
+                { type: 'volume', value: shouldMute ? 0 : 1 }
+            ];
+
+            commands.forEach(cmd => {
+                try { iframe.contentWindow.postMessage(JSON.stringify(cmd), '*'); } catch (e) { }
+            });
+        }
+
+        function globalMuteAll() {
+            muteAllStreams();
+            // Feedback visual em todos os containers
+            document.querySelectorAll('.video-item').forEach(el => {
+                showStatus(el.id, 'Silenciar Tudo 🔇');
+            });
+        }
+
+        function muteAllStreams(excludeId = null) {
+            // YouTube
+            playerIds.forEach(pId => {
+                if (pId !== excludeId) {
+                    const p = players[pId];
+                    if (p && typeof p.mute === 'function') p.mute();
+                    const container = document.getElementById(`container-${pId}`);
+                    if (container) container.setAttribute('data-muted', 'true');
+                }
+            });
+            // Kick (Agressivo: Envia para todos, exceto o excluído)
+            document.querySelectorAll('.video-item[data-platform="kick"]').forEach(item => {
+                const iframe = item.querySelector('iframe');
+                if (iframe && iframe.id !== excludeId) {
+                    // Forçamos o silêncio independente do estado atual no DOM
+                    setAudioStateKick(item, true);
+                }
+            });
+        }
+
+        function toggleFullscreen(e, element) {
+            if (e) e.stopPropagation();
+            const platform = element.getAttribute('data-platform');
+
+            if (!document.fullscreenElement) {
+                const requestFunc = element.requestFullscreen || element.webkitRequestFullscreen;
+                if (requestFunc) {
+                    requestFunc.call(element).then(() => {
+                        setAudioFocus(platform, element);
+                    }).catch(() => { });
+                }
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        function showStatus(containerId, text) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            let status = container.querySelector('.status-indicator');
+            if (!status) {
+                status = document.createElement('div');
+                status.className = 'status-indicator';
+                container.appendChild(status);
+            }
+            status.textContent = text;
+            status.classList.add('visible');
+            setTimeout(() => status.classList.remove('visible'), 1500);
+        }
+
+        function getSavedIds() {
+            const saved = localStorage.getItem('msquare_streams');
+            return saved ? JSON.parse(saved) : defaultVideos;
+        }
+
+        function createPlayer(elementId, videoId) {
+            players[elementId] = new YT.Player(elementId, {
+                height: '100%', width: '100%', videoId: videoId,
+                playerVars: { 'autoplay': 1, 'mute': 1, 'enablejsapi': 1, 'controls': 0, 'rel': 0 },
+                events: {
+                    'onReady': (e) => { e.target.mute(); e.target.playVideo(); },
+                    'onStateChange': (e) => { if (e.data === YT.PlayerState.PAUSED) e.target.playVideo(); }
+                }
+            });
         }
 
         function renderInputs(ids) {
@@ -191,15 +331,9 @@
             container.innerHTML = ids.map((videoData, index) => {
                 const info = typeof videoData === 'string' ? { id: videoData, platform: 'youtube' } : videoData;
                 const value = info.platform === 'kick' ? `kick.com/${info.id}` : info.id;
-                return `
-                    <div class="input-group">
-                        <label>Vídeo ${index + 1} (YT ou Kick)</label>
-                        <div class="input-row">
-                            <input type="text" class="stream-input" value="${value}" placeholder="Ex: youtube.com/... ou kick.com/...">
-                            ${ids.length > 1 ? `<button class="btn-remove" onclick="removeStream(${index})">🗑</button>` : ''}
-                        </div>
-                    </div>
-                `;
+                return `<div class="input-group"><label>Vídeo ${index + 1}</label><div class="input-row">
+                        <input type="text" class="stream-input" value="${value}">${ids.length > 1 ? `<button class="btn-remove" onclick="removeStream(${index})">🗑</button>` : ''}
+                        </div></div>`;
             }).join('');
         }
 
@@ -220,275 +354,75 @@
         function removeStreamFromGrid(e, index) {
             if (e) e.stopPropagation();
             const ids = getSavedIds();
-            if (ids.length <= 1) {
-                alert('Mantenha pelo menos um vídeo na grade.');
-                return;
-            }
-            if (confirm('Deseja remover este vídeo da grade?')) {
+            if (ids.length <= 1) return alert('Mantenha pelo menos um vídeo.');
+            if (confirm('Remover este vídeo?')) {
                 ids.splice(index, 1);
                 localStorage.setItem('msquare_streams', JSON.stringify(ids));
                 updateSystemState(ids);
             }
         }
 
-        function onYouTubeIframeAPIReady() {
-            initApp();
-            renderInputs(getSavedIds());
-        }
-
-        function getSavedIds() {
-            const saved = localStorage.getItem('msquare_streams');
-            return saved ? JSON.parse(saved) : defaultVideos;
-        }
-
-        function createPlayer(elementId, videoId) {
-            if (!videoId) return;
-
-            players[elementId] = new YT.Player(elementId, {
-                height: '100%',
-                width: '100%',
-                videoId: videoId,
-                playerVars: {
-                    'autoplay': 1,
-                    'mute': 1,
-                    'enablejsapi': 1,
-                    'controls': 0,
-                    'rel': 0,
-                    'iv_load_policy': 3
-                },
-                events: {
-                    'onReady': (event) => {
-                        event.target.mute();
-                        event.target.playVideo();
-                    },
-                    'onStateChange': (event) => {
-                        if (event.data === YT.PlayerState.PAUSED) {
-                            event.target.playVideo();
-                        }
-                    }
-                }
-            });
-        }
-
-        function openModal(isAddingNew = false) {
-            renderInputs(getSavedIds());
-            document.getElementById('settingsModal').style.display = 'flex';
-
-            if (isAddingNew) {
-                // Focus na pesquisa para agilizar a adição
-                setTimeout(() => {
-                    const searchInput = document.getElementById('ytSearchInput');
-                    searchInput.focus();
-                    searchInput.placeholder = "Digite o nome para o novo vídeo...";
-                }, 100);
-            }
-        }
-
-        function closeModal() { document.getElementById('settingsModal').style.display = 'none'; }
-
-        function extractVideoInfo(url) {
-            if (!url) return null;
-            url = url.trim();
-
-            // Detecção de Kick.com
-            if (url.includes('kick.com/')) {
-                const kickMatch = url.match(/kick\.com\/([a-zA-Z0-9_-]+)/);
-                if (kickMatch && kickMatch[1]) {
-                    return { id: kickMatch[1], platform: 'kick' };
-                }
-            }
-
-            // Fallback para IDs do Kick se começar com algo específico? 
-            // Melhor forçar a URL para Kick ou detectar que não é YouTube.
-
-            // Detecção de YouTube
-            // Se já for um ID de 11 caracteres (padrão YouTube)
-            if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
-                return { id: url, platform: 'youtube' };
-            }
-
-            const regexes = [
-                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
-                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
-                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
-                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/live\/([a-zA-Z0-9_-]{11})/,
-                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
-                /(?:https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})/,
-                /(?:https?:\/\/)?m\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/
-            ];
-
-            for (const regex of regexes) {
-                const match = url.match(regex);
-                if (match && match[1]) {
-                    return { id: match[1], platform: 'youtube' };
-                }
-            }
-
-            // Fallback para URLs complexas de YouTube
-            try {
-                const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
-                if (urlObj.searchParams.has('v')) {
-                    return { id: urlObj.searchParams.get('v'), platform: 'youtube' };
-                }
-            } catch (e) { }
-
-            // Se nada bater mas parecer um ID curto, assume YouTube por padrão legado
-            return { id: url, platform: 'youtube' };
-        }
-
-        async function searchYouTube() {
-            const query = document.getElementById('ytSearchInput').value.trim();
-            const apiKey = localStorage.getItem('yt_api_key');
-            const resultsContainer = document.getElementById('searchResults');
-
-            if (!query) return;
-            if (!apiKey) {
-                alert('Por favor, configure sua YouTube API Key clicando no ícone de chave abaixo.');
-                return;
-            }
-
-            resultsContainer.innerHTML = '<p style="text-align:center; padding: 10px; font-size: 0.8rem;">Pesquisando...</p>';
-
-            try {
-                const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query)}&type=video&key=${apiKey}`);
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                resultsContainer.innerHTML = data.items.map(item => `
-                    <div class="search-result-item" onclick="selectVideo('${item.id.videoId}')">
-                        <img src="${item.snippet.thumbnails.default.url}" alt="thumb">
-                        <div class="result-info">
-                            <span class="result-title">${item.snippet.title}</span>
-                            <span class="result-channel">${item.snippet.channelTitle}</span>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                resultsContainer.innerHTML = `<p style="color: #ff4444; font-size: 0.8rem; padding: 10px;">Erro: ${error.message}</p>`;
-            }
-        }
-
-        function selectVideo(id) {
-            // Adiciona o vídeo ao primeiro input vazio ou cria um novo
-            const inputs = document.querySelectorAll('.stream-input');
-            let filled = false;
-            for (let input of inputs) {
-                if (input.value.trim() === '') {
-                    input.value = id;
-                    filled = true;
-                    break;
-                }
-            }
-            if (!filled) {
-                addStream();
-                setTimeout(() => {
-                    const newInputs = document.querySelectorAll('.stream-input');
-                    newInputs[newInputs.length - 1].value = id;
-                }, 50);
-            }
-            document.getElementById('searchResults').innerHTML = '';
-            document.getElementById('ytSearchInput').value = '';
-        }
-
-        function toggleApiSettings() {
-            const panel = document.getElementById('apiSettings');
-            panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
-            if (panel.style.display === 'flex') {
-                document.getElementById('ytApiKey').value = localStorage.getItem('yt_api_key') || '';
-            }
-        }
-
-        function saveApiKey() {
-            const key = document.getElementById('ytApiKey').value.trim();
-            localStorage.setItem('yt_api_key', key);
-            alert('API Key salva com sucesso!');
-            toggleApiSettings();
-        }
-
         function saveSettings() {
             const inputs = document.querySelectorAll('.stream-input');
-            const newInfos = Array.from(inputs)
-                .map(i => extractVideoInfo(i.value.trim()))
-                .filter(info => info !== null && info.id !== '');
-
-            if (newInfos.length === 0) {
-                alert('Adicione pelo menos um vídeo válido.');
-                return;
-            }
-
+            const newInfos = Array.from(inputs).map(i => extractVideoInfo(i.value.trim())).filter(info => info && info.id);
+            if (newInfos.length === 0) return alert('Adicione um vídeo válido.');
             localStorage.setItem('msquare_streams', JSON.stringify(newInfos));
             updateSystemState(newInfos);
             closeModal();
         }
 
-        function toggleFullscreen(e, element) {
-            if (e) { e.stopPropagation(); }
-            const iframe = element.querySelector('iframe');
-            if (!document.fullscreenElement) {
-                if (element.requestFullscreen) element.requestFullscreen();
-                else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen();
-
-                if (iframe && players[iframe.id]) {
-                    const id = iframe.id;
-                    playerIds.forEach(pId => players[pId]?.mute?.());
-                    players[id]?.unMute?.();
-                    showStatus(id, 'Fullscreen Focus 📺🔊');
-                }
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
+        function extractVideoInfo(url) {
+            if (!url) return null;
+            if (url.includes('kick.com/')) {
+                const m = url.match(/kick\.com\/([a-zA-Z0-9_-]+)/);
+                return m ? { id: m[1], platform: 'kick' } : null;
             }
+            const ytId = url.match(/(?:v=|v\/|embed\/|live\/|shorts\/|youtu\.be\/|\/v\/|^)([a-zA-Z0-9_-]{11})/);
+            return ytId ? { id: ytId[1], platform: 'youtube' } : { id: url, platform: 'youtube' };
         }
 
-        function toggleMute(e, id) {
-            if (e) { e.stopPropagation(); }
-            const now = Date.now();
-            if (now - lastClickTime < 300) { lastClickTime = now; return false; }
-            lastClickTime = now;
-
-            const targetPlayer = players[id];
-            if (!targetPlayer || typeof targetPlayer.isMuted !== 'function') return false;
-
-            const isCurrentlyMuted = targetPlayer.isMuted();
-            playerIds.forEach(pId => players[pId]?.mute?.());
-
-            if (isCurrentlyMuted) {
-                targetPlayer.unMute();
-                targetPlayer.playVideo();
-                showStatus(id, 'Audio Focus 🔊');
-            } else {
-                showStatus(id, 'All Muted 🔇');
-            }
-            return false;
+        async function searchYouTube() {
+            const query = document.getElementById('ytSearchInput').value.trim();
+            const apiKey = localStorage.getItem('yt_api_key');
+            if (!query || !apiKey) return alert('Configure a API Key.');
+            const results = document.getElementById('searchResults');
+            results.innerHTML = '<p>Pesquisando...</p>';
+            try {
+                const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query)}&type=video&key=${apiKey}`);
+                const data = await res.json();
+                results.innerHTML = data.items.map(item => `
+                    <div class="search-result-item" onclick="selectVideo('${item.id.videoId}')">
+                        <img src="${item.snippet.thumbnails.default.url}"><div class="result-info"><span>${item.snippet.title}</span></div>
+                    </div>`).join('');
+            } catch (e) { results.innerHTML = '<p>Erro na busca.</p>'; }
         }
 
-        function showStatus(id, text) {
-            const container = document.getElementById(id).parentElement;
-            let status = container.querySelector('.status-indicator');
-            if (!status) {
-                status = document.createElement('div');
-                status.className = 'status-indicator';
-                container.appendChild(status);
-            }
-            status.textContent = text;
-            status.classList.add('visible');
-            setTimeout(() => status.classList.remove('visible'), 1500);
+        function handleInstantUrl(v) {
+            const info = extractVideoInfo(v);
+            if (info && (v.includes('.') || v.includes('/'))) selectVideo(info.id, info.platform);
         }
+
+        function selectVideo(id, platform = 'youtube') {
+            const currentIds = getSavedIds();
+            currentIds.push({ id, platform });
+            localStorage.setItem('msquare_streams', JSON.stringify(currentIds));
+            updateSystemState(currentIds);
+            closeModal();
+        }
+
+        function openModal() { document.getElementById('settingsModal').style.display = 'flex'; renderInputs(getSavedIds()); }
+        function closeModal() { document.getElementById('settingsModal').style.display = 'none'; }
+        function toggleApiSettings() { const p = document.getElementById('apiSettings'); p.style.display = p.style.display === 'none' ? 'flex' : 'none'; }
+        function saveApiKey() { localStorage.setItem('yt_api_key', document.getElementById('ytApiKey').value); toggleApiSettings(); }
 
         function triggerEntranceAnimation() {
-            document.querySelectorAll('.video-item').forEach((item, index) => {
-                setTimeout(() => {
-                    item.style.opacity = "1";
-                    item.style.transform = "scale(1)";
-                }, index * 100);
+            document.querySelectorAll('.video-item').forEach((item, i) => {
+                setTimeout(() => { item.style.opacity = "1"; item.style.transform = "scale(1)"; }, i * 100);
             });
         }
-        // Força inicialização caso a API já esteja carregada (cache)
-        if (window.YT && window.YT.Player) {
-            onYouTubeIframeAPIReady();
-        }
+
+        document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) muteAllStreams(); });
+        function onYouTubeIframeAPIReady() { initApp(); }
     </script>
     <script src="https://www.youtube.com/iframe_api"></script>
 </body>
