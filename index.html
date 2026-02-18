@@ -80,7 +80,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.42</div>
+    <div class="version-badge">V0.10.43</div>
 
 
     <script>
@@ -111,9 +111,14 @@
             playerIds = ids.map((_, i) => `player${i + 1}`);
             renderGrid(ids);
 
-            // Inicializa novos players. 
+            // Inicializa novos players YouTube. 
             if (typeof YT !== 'undefined' && YT.Player) {
-                playerIds.forEach((id, index) => createPlayer(id, ids[index]));
+                ids.forEach((videoData, index) => {
+                    const info = typeof videoData === 'string' ? { id: videoData, platform: 'youtube' } : videoData;
+                    if (info.platform === 'youtube') {
+                        createPlayer(`player${index + 1}`, info.id);
+                    }
+                });
                 triggerEntranceAnimation();
             }
         }
@@ -122,17 +127,33 @@
             const container = document.getElementById('videoContainer');
             const borders = ['border-primary', 'border-secondary', 'border-tertiary', 'border-gradient'];
 
-            // Sempre adiciona um slot vazio no final para preencher a grade e convidar a adicionar mais
-            const displayIds = [...ids, ""];
+            // Sempre adiciona um slot vazio no final
+            const displayIds = [...ids, null];
 
-            container.innerHTML = displayIds.map((id, index) => {
+            container.innerHTML = displayIds.map((videoData, index) => {
                 const bClass = borders[index % borders.length];
+                const info = videoData ? (typeof videoData === 'string' ? { id: videoData, platform: 'youtube' } : videoData) : null;
 
-                if (!id || id.trim() === '') {
+                if (!info || !info.id || info.id.trim() === '') {
                     return `
                         <div class="video-item ${bClass} empty-slot" onclick="openModal(true)">
                             <div class="add-icon-wrapper">+</div>
                             <span>Adicionar Vídeo</span>
+                        </div>
+                    `;
+                }
+
+                if (info.platform === 'kick') {
+                    return `
+                        <div class="video-item ${bClass}" ondblclick="toggleFullscreen(event, this)">
+                            <button class="btn-delete-video" onclick="removeStreamFromGrid(event, ${index})" title="Remover vídeo">✕</button>
+                            <iframe 
+                                src="https://player.kick.com/${info.id}?autoplay=true&muted=true" 
+                                frameborder="0" 
+                                scrolling="no" 
+                                allowfullscreen="true" 
+                                style="width:100%; height:100%;">
+                            </iframe>
                         </div>
                     `;
                 }
@@ -149,15 +170,19 @@
 
         function renderInputs(ids) {
             const container = document.getElementById('inputContainer');
-            container.innerHTML = ids.map((id, index) => `
-                <div class="input-group">
-                    <label>Vídeo ${index + 1} (Link ou ID)</label>
-                    <div class="input-row">
-                        <input type="text" class="stream-input" value="${id}" placeholder="Ex: https://www.youtube.com/watch?v=...">
-                        ${ids.length > 1 ? `<button class="btn-remove" onclick="removeStream(${index})">🗑</button>` : ''}
+            container.innerHTML = ids.map((videoData, index) => {
+                const info = typeof videoData === 'string' ? { id: videoData, platform: 'youtube' } : videoData;
+                const value = info.platform === 'kick' ? `kick.com/${info.id}` : info.id;
+                return `
+                    <div class="input-group">
+                        <label>Vídeo ${index + 1} (YT ou Kick)</label>
+                        <div class="input-row">
+                            <input type="text" class="stream-input" value="${value}" placeholder="Ex: youtube.com/... ou kick.com/...">
+                            ${ids.length > 1 ? `<button class="btn-remove" onclick="removeStream(${index})">🗑</button>` : ''}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function addStream() {
@@ -243,13 +268,25 @@
 
         function closeModal() { document.getElementById('settingsModal').style.display = 'none'; }
 
-        function extractYouTubeId(url) {
-            if (!url) return '';
+        function extractVideoInfo(url) {
+            if (!url) return null;
             url = url.trim();
 
+            // Detecção de Kick.com
+            if (url.includes('kick.com/')) {
+                const kickMatch = url.match(/kick\.com\/([a-zA-Z0-9_-]+)/);
+                if (kickMatch && kickMatch[1]) {
+                    return { id: kickMatch[1], platform: 'kick' };
+                }
+            }
+
+            // Fallback para IDs do Kick se começar com algo específico? 
+            // Melhor forçar a URL para Kick ou detectar que não é YouTube.
+
+            // Detecção de YouTube
             // Se já for um ID de 11 caracteres (padrão YouTube)
             if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
-                return url;
+                return { id: url, platform: 'youtube' };
             }
 
             const regexes = [
@@ -265,19 +302,20 @@
             for (const regex of regexes) {
                 const match = url.match(regex);
                 if (match && match[1]) {
-                    return match[1];
+                    return { id: match[1], platform: 'youtube' };
                 }
             }
 
-            // Fallback para URLs complexas com múltiplos parâmetros
+            // Fallback para URLs complexas de YouTube
             try {
                 const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
                 if (urlObj.searchParams.has('v')) {
-                    return urlObj.searchParams.get('v');
+                    return { id: urlObj.searchParams.get('v'), platform: 'youtube' };
                 }
             } catch (e) { }
 
-            return url;
+            // Se nada bater mas parecer um ID curto, assume YouTube por padrão legado
+            return { id: url, platform: 'youtube' };
         }
 
         async function searchYouTube() {
@@ -354,17 +392,17 @@
 
         function saveSettings() {
             const inputs = document.querySelectorAll('.stream-input');
-            const newIds = Array.from(inputs)
-                .map(i => extractYouTubeId(i.value.trim()))
-                .filter(id => id !== '');
+            const newInfos = Array.from(inputs)
+                .map(i => extractVideoInfo(i.value.trim()))
+                .filter(info => info !== null && info.id !== '');
 
-            if (newIds.length === 0) {
+            if (newInfos.length === 0) {
                 alert('Adicione pelo menos um vídeo válido.');
                 return;
             }
 
-            localStorage.setItem('msquare_streams', JSON.stringify(newIds));
-            updateSystemState(newIds);
+            localStorage.setItem('msquare_streams', JSON.stringify(newInfos));
+            updateSystemState(newInfos);
             closeModal();
         }
 
