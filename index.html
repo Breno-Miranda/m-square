@@ -42,6 +42,9 @@
         <button class="btn-mute-all" onclick="globalMuteAll()" title="Silenciar toda a grade">
             <span>🔇</span>
         </button>
+        <button class="btn-floating-share" onclick="shareCurrentGrid()" title="Compartilhar Grade">
+            <span>🔗</span>
+        </button>
         <button class="btn-settings" onclick="openModal()">
             <span>⚙️</span> Configurar Canais
         </button>
@@ -65,11 +68,24 @@
                     <div id="searchResults" class="search-results-list"></div>
                 </div>
 
+                <button class="btn-share-grid" onclick="shareCurrentGrid()">
+                    <span class="share-icon">🔗</span> Compartilhar esta Grade
+                </button>
+
                 <div id="manageSection">
                     <div id="inputContainer">
                         <!-- Inputs dinâmicos -->
                     </div>
                     <button class="btn-add-stream" onclick="addStream()">+ Adicionar outro vídeo</button>
+                </div>
+
+                <div class="sync-section">
+                    <label class="toggle-container">
+                        <input type="checkbox" id="keepLiveSync" onchange="toggleLiveSync(this.checked)">
+                        <span class="toggle-label">Manter Monitoramento Ao Vivo (Auto-Reconnect)</span>
+                    </label>
+                    <p class="sync-hint">Verifica a cada minuto se a transmissão está ativa e reconecta se necessário.
+                    </p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -85,7 +101,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.71</div>
+    <div class="version-badge">V0.10.74</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -119,9 +135,47 @@
         ];
 
         function initApp() {
+            // Priority 1: URL Parameters (Sharing)
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedData = urlParams.get('grid');
+
+            if (sharedData) {
+                try {
+                    const decoded = JSON.parse(atob(sharedData));
+                    if (Array.isArray(decoded) && decoded.length > 0) {
+                        console.log("[M-Square] Carregando grade compartilhada...");
+                        localStorage.setItem('msquare_streams', JSON.stringify(decoded));
+                        // Clear URL to avoid re-loading shared data on manual refresh if user changes it
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        updateSystemState(decoded);
+                        return;
+                    }
+                } catch (e) {
+                    console.error("[M-Square] Erro ao decodificar grade compartilhada:", e);
+                }
+            }
+
+            // Priority 2: LocalStorage
             const saved = localStorage.getItem('msquare_streams');
             const streamIds = saved ? JSON.parse(saved) : defaultVideos;
             updateSystemState(streamIds);
+        }
+
+        function shareCurrentGrid() {
+            const streams = getSavedIds();
+            try {
+                const encoded = btoa(JSON.stringify(streams));
+                const shareUrl = `${window.location.origin}${window.location.pathname}?grid=${encoded}`;
+
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert("Link de compartilhamento copiado! Envie para quem você quiser.");
+                }).catch(err => {
+                    console.error("Erro ao copiar link:", err);
+                    prompt("Copie seu link de compartilhamento:", shareUrl);
+                });
+            } catch (e) {
+                alert("Erro ao gerar link de compartilhamento.");
+            }
         }
 
         function updateSystemState(ids) {
@@ -198,6 +252,7 @@
                 const pId = `player${index + 1}`;
                 return `
                     <div class="video-item ${bClass}" id="container-${pId}" data-platform="youtube" data-id="${pId}" data-muted="true">
+                        <div class="live-badge">AO VIVO</div>
                         <button class="btn-delete-video" onclick="removeStreamFromGrid(event, ${index})" title="Remover vídeo">✕</button>
                         <div class="video-overlay" onclick="handleVideoClick(event, this, '${pId}', 'youtube')"></div>
                         <div id="${pId}"></div> 
@@ -341,8 +396,74 @@
                 height: '100%', width: '100%', videoId: videoId,
                 playerVars: { 'autoplay': 1, 'mute': 1, 'enablejsapi': 1, 'controls': 0, 'rel': 0 },
                 events: {
-                    'onReady': (e) => { e.target.mute(); e.target.playVideo(); },
-                    'onStateChange': (e) => { if (e.data === YT.PlayerState.PAUSED) e.target.playVideo(); }
+                    'onReady': (e) => {
+                        e.target.mute();
+                        e.target.playVideo();
+                        updateLiveStatus(elementId, e.target);
+                    },
+                    'onStateChange': (e) => {
+                        if (e.data === YT.PlayerState.PAUSED) e.target.playVideo();
+                        updateLiveStatus(elementId, e.target);
+                    }
+                }
+            });
+        }
+
+        function updateLiveStatus(elementId, player) {
+            const container = document.getElementById(`container-${elementId}`);
+            if (!container) return;
+
+            try {
+                const videoData = player.getVideoData();
+                const isLive = player.getVideoAttributes ? player.getVideoAttributes().isLive : false;
+                // Alternativa: YouTube API sometimes exposes isLive in getVideoData().
+                // Mas a forma mais segura de saber se "tá vermelhinho" é checar se é live e está tocando.
+                // Usaremos um indicador visual se o Vídeo for reconhecido como Live.
+
+                // Se o título ou dados indicarem live, ou se for uma transmissão
+                if (videoData && (videoData.isLive || videoData.title.toLowerCase().includes('live'))) {
+                    container.classList.add('is-live');
+                } else {
+                    container.classList.remove('is-live');
+                }
+            } catch (e) { }
+        }
+
+        let liveSyncInterval = null;
+
+        function toggleLiveSync(enabled) {
+            localStorage.setItem('msquare_live_sync', enabled);
+            if (enabled) {
+                startLiveSync();
+            } else {
+                stopLiveSync();
+            }
+        }
+
+        function startLiveSync() {
+            if (liveSyncInterval) clearInterval(liveSyncInterval);
+            liveSyncInterval = setInterval(checkLiveStatus, 60000); // 1 minuto
+            console.log("[M-Square] Monitoramento Live Ativado.");
+        }
+
+        function stopLiveSync() {
+            if (liveSyncInterval) clearInterval(liveSyncInterval);
+            liveSyncInterval = null;
+            console.log("[M-Square] Monitoramento Live Desativado.");
+        }
+
+        function checkLiveStatus() {
+            Object.keys(players).forEach(id => {
+                const player = players[id];
+                const container = document.getElementById(`container-${id}`);
+                if (player && typeof player.getPlayerState === 'function') {
+                    const state = player.getPlayerState();
+                    // Se não estiver tocando (1) ou carregando (3), e não estiver sendo interagido
+                    if (state !== 1 && state !== 3) {
+                        console.log(`[LiveSync] Player ${id} parou (state: ${state}). Reiniciando...`);
+                        player.playVideo();
+                        showStatus(`container-${id}`, '🔄 Re-sync');
+                    }
                 }
             });
         }
@@ -431,7 +552,12 @@
             closeModal();
         }
 
-        function openModal() { document.getElementById('settingsModal').style.display = 'flex'; renderInputs(getSavedIds()); }
+        function openModal() {
+            document.getElementById('settingsModal').style.display = 'flex';
+            renderInputs(getSavedIds());
+            const syncEnabled = localStorage.getItem('msquare_live_sync') === 'true';
+            document.getElementById('keepLiveSync').checked = syncEnabled;
+        }
         function closeModal() { document.getElementById('settingsModal').style.display = 'none'; }
         function toggleApiSettings() { const p = document.getElementById('apiSettings'); p.style.display = p.style.display === 'none' ? 'flex' : 'none'; }
         function saveApiKey() { localStorage.setItem('yt_api_key', document.getElementById('ytApiKey').value); toggleApiSettings(); }
@@ -447,7 +573,11 @@
             updateGridLayout();
         });
 
-        function onYouTubeIframeAPIReady() { initApp(); }
+        function onYouTubeIframeAPIReady() {
+            initApp();
+            const syncEnabled = localStorage.getItem('msquare_live_sync') === 'true';
+            if (syncEnabled) startLiveSync();
+        }
     </script>
     <script src="https://www.youtube.com/iframe_api"></script>
 </body>
