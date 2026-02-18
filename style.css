@@ -301,6 +301,56 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
+/* Supported Platforms */
+.supported-platforms {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px 12px;
+    border-radius: 50px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 1000;
+}
+
+.platform-label {
+    font-size: 0.6rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.platform-icons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.platform-item {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.platform-item:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.platform-item svg {
+    width: 100%;
+    height: 100%;
+}
+
 @keyframes float {
 
     0%,
