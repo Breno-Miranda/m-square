@@ -23,6 +23,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="style.css">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7844284078845131"
+        crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -101,7 +104,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.74</div>
+    <div class="version-badge">V0.10.77</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -201,8 +204,11 @@
         function updateGridLayout() {
             const container = document.getElementById('videoContainer');
             const nVideos = playerIds.length;
-            const cols = Math.ceil(Math.sqrt(nVideos + 1));
-            const rows = Math.ceil((nVideos + 1) / cols);
+            const nAds = nVideos >= 2 ? 1 : 0; // Adiciona 1 slot de anúncio se houver 2+ vídeos
+            const totalCells = nVideos + nAds + 1; // +1 para o botão de adicionar
+
+            const cols = Math.ceil(Math.sqrt(totalCells));
+            const rows = Math.ceil(totalCells / cols);
 
             if (window.innerWidth > 768) {
                 container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
@@ -221,27 +227,60 @@
             const container = document.getElementById('videoContainer');
             const borders = ['border-primary', 'border-secondary', 'border-tertiary', 'border-gradient'];
             const nVideos = ids.length;
-            const cols = Math.ceil(Math.sqrt(nVideos + 1));
-            const rows = Math.ceil((nVideos + 1) / cols);
+            const nAds = nVideos >= 2 ? 1 : 0;
+            const totalItems = nVideos + nAds + 1;
+
+            const cols = Math.ceil(Math.sqrt(totalItems));
+            const rows = Math.ceil(totalItems / cols);
             const totalCells = cols * rows;
-            const displayIds = [...ids];
-            while (displayIds.length < totalCells) displayIds.push(null);
 
-            container.innerHTML = displayIds.map((videoData, index) => {
+            // Criamos uma lista de itens que inclui vídeos, o anúncio e o botão "Adicionar"
+            let items = [];
+
+            // Adicionamos os vídeos
+            ids.forEach((id, i) => items.push({ type: 'video', data: id, index: i }));
+
+            // Inserimos o anúncio estrategicamente (ex: após o 2º vídeo ou no final)
+            if (nAds > 0) {
+                const adPos = items.length >= 2 ? 2 : items.length;
+                items.splice(adPos, 0, { type: 'ad' });
+            }
+
+            // Preenchemos com slots vazios/botão de adicionar até o total de células
+            while (items.length < totalCells) {
+                items.push({ type: 'empty' });
+            }
+
+            container.innerHTML = items.map((item, index) => {
                 const bClass = borders[index % borders.length];
-                const info = videoData ? (typeof videoData === 'string' ? { id: videoData, platform: 'youtube' } : videoData) : null;
 
-                if (!info || !info.id || info.id.trim() === '') {
+                if (item.type === 'ad') {
+                    return `
+                        <div class="video-item ad-slot ${bClass}">
+                            <div class="ad-label">Patrocinado</div>
+                            <ins class="adsbygoogle"
+                                 style="display:block; width:100%; height:100%;"
+                                 data-ad-client="ca-pub-7844284078845131"
+                                 data-ad-slot="XXXXXXXXXX"
+                                 data-ad-format="auto"
+                                 data-full-width-responsive="true"></ins>
+                        </div>`;
+                }
+
+                if (item.type === 'empty') {
                     return `<div class="video-item ${bClass} empty-slot" onclick="openModal('add')">
                                 <div class="add-icon-wrapper">+</div><span>Adicionar Vídeo</span>
                             </div>`;
                 }
 
+                const info = item.data ? (typeof item.data === 'string' ? { id: item.data, platform: 'youtube' } : item.data) : null;
+                const videoIndex = item.index;
+
                 if (info.platform === 'kick') {
-                    const kId = `kick-${index}`;
+                    const kId = `kick-${videoIndex}`;
                     return `
                         <div class="video-item ${bClass}" id="container-${kId}" data-platform="kick" data-id="${info.id}" data-muted="true">
-                            <button class="btn-delete-video" onclick="removeStreamFromGrid(event, ${index})" title="Remover vídeo">✕</button>
+                            <button class="btn-delete-video" onclick="removeStreamFromGrid(event, ${videoIndex})" title="Remover vídeo">✕</button>
                             <div class="video-overlay" onclick="handleVideoClick(event, this, '${info.id}', 'kick')"></div>
                             <iframe id="${kId}" src="https://player.kick.com/${info.id}?autoplay=true&muted=true" 
                                 frameborder="0" scrolling="no" allowfullscreen="true" style="width:100%; height:100%;">
@@ -249,15 +288,29 @@
                         </div>`;
                 }
 
-                const pId = `player${index + 1}`;
+                const pId = `player${videoIndex + 1}`;
                 return `
                     <div class="video-item ${bClass}" id="container-${pId}" data-platform="youtube" data-id="${pId}" data-muted="true">
                         <div class="live-badge">AO VIVO</div>
-                        <button class="btn-delete-video" onclick="removeStreamFromGrid(event, ${index})" title="Remover vídeo">✕</button>
+                        <button class="btn-delete-video" onclick="removeStreamFromGrid(event, ${videoIndex})" title="Remover vídeo">✕</button>
                         <div class="video-overlay" onclick="handleVideoClick(event, this, '${pId}', 'youtube')"></div>
                         <div id="${pId}"></div> 
                     </div>`;
             }).join('');
+
+            // Inicializa os anúncios injetados de forma assíncrona para garantir o DOM
+            if (nAds > 0) {
+                setTimeout(() => {
+                    try {
+                        const adInSlots = document.querySelectorAll('.ad-slot:not([data-ad-status])');
+                        adInSlots.forEach(() => {
+                            (window.adsbygoogle = window.adsbygoogle || []).push({});
+                        });
+                    } catch (e) {
+                        console.warn("[M-Square] Falha ao injetar anúncio:", e);
+                    }
+                }, 500);
+            }
         }
 
         function handleVideoClick(e, overlay, id, platform) {

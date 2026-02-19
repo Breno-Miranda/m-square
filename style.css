@@ -298,6 +298,28 @@ body {
     }
 }
 
+/* Ad Slot Styles */
+.ad-slot {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ad-label {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 0.5rem;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    z-index: 5;
+    pointer-events: none;
+}
+
 /* Version Badge */
 .version-badge {
     position: fixed;
