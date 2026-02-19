@@ -41,15 +41,23 @@
         </div>
     </main>
 
-    <div class="floating-control">
-        <button class="btn-mute-all" onclick="globalMuteAll()" title="Silenciar toda a grade">
-            <span>🔇</span>
-        </button>
-        <button class="btn-floating-share" onclick="shareCurrentGrid()" title="Compartilhar Grade">
-            <span>🔗</span>
-        </button>
-        <button class="btn-settings" onclick="openModal()">
-            <span>⚙️</span> Configurar Canais
+    <div class="fab-wrapper">
+        <div class="fab-menu" id="fabMenu">
+            <button class="fab-item" onclick="globalMuteAll(); toggleFabMenu();" title="Silenciar Tudo">
+                <span>🔇</span>
+                <span class="fab-label">Mutar Tudo</span>
+            </button>
+            <button class="fab-item" onclick="shareCurrentGrid(); toggleFabMenu();" title="Compartilhar Grade">
+                <span>🔗</span>
+                <span class="fab-label">Compartilhar</span>
+            </button>
+            <button class="fab-item" onclick="openModal(); toggleFabMenu();" title="Configurar Canais">
+                <span>🛠️</span>
+                <span class="fab-label">Configurar</span>
+            </button>
+        </div>
+        <button class="fab-main" id="fabMain" onclick="toggleFabMenu()">
+            <span class="fab-icon-main">⚙️</span>
         </button>
     </div>
 
@@ -104,7 +112,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.77</div>
+    <div class="version-badge">V0.10.80</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -601,6 +609,11 @@
             const currentIds = getSavedIds();
             currentIds.push({ id, platform });
             localStorage.setItem('msquare_streams', JSON.stringify(currentIds));
+
+            // Limpa o campo imediatamente para a próxima interação
+            const sInput = document.getElementById('ytSearchInput');
+            if (sInput) sInput.value = '';
+
             updateSystemState(currentIds);
             closeModal();
         }
@@ -631,6 +644,24 @@
             const syncEnabled = localStorage.getItem('msquare_live_sync') === 'true';
             if (syncEnabled) startLiveSync();
         }
+
+        function toggleFabMenu() {
+            const menu = document.getElementById('fabMenu');
+            const mainBtn = document.getElementById('fabMain');
+            menu.classList.toggle('active');
+            mainBtn.classList.toggle('active');
+        }
+
+        // Fecha o menu se clicar fora
+        document.addEventListener('click', (e) => {
+            const wrapper = document.querySelector('.fab-wrapper');
+            const menu = document.getElementById('fabMenu');
+            const mainBtn = document.getElementById('fabMain');
+            if (menu.classList.contains('active') && !wrapper.contains(e.target)) {
+                menu.classList.remove('active');
+                mainBtn.classList.remove('active');
+            }
+        });
     </script>
     <script src="https://www.youtube.com/iframe_api"></script>
 </body>
