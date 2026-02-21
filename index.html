@@ -212,7 +212,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.98</div>
+    <div class="version-badge">V0.11.00</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -368,14 +368,11 @@
                 if (item.type === 'ad') {
                     return `
                         <div class="video-item ad-slot ${bClass}">
-                            <!-- Publicidade -->
-                            <div class="ad-placeholder">
+                            <div class="ad-placeholder" id="ad-placeholder-${index}">
                                 <div class="ad-loading-spinner"></div>
                                 <span>Publicidade</span>
                             </div>
-                            <div class="ad-label">Google AdSense</div>
-                            <ins class="adsbygoogle"
-                                 style="display:block; width:100%; height:100%; position:absolute; top:0; left:0; z-index:10;"
+                            <ins class="adsbygoogle ad-ins"
                                  data-ad-client="ca-pub-7844284078845131"
                                  data-ad-slot="6848758884"
                                  data-ad-format="auto"
@@ -857,15 +854,52 @@
                 return null;
             }
 
-            // ─── FASE 1: Buscar video ID real da live ativa (/live page) ─────────────
-            // Scraping da página /@Handle/live que, quando há live ativa,
-            // expõe o og:url/canonical com o watch?v=VIDEO_ID específico.
-            // Isso resolve o problema de múltiplos streams simultâneos: pegamos
-            // o video ID exato em vez de depender do live_stream?channel= genérico.
+            // ─── FASE 1: Buscar video ID real da live ativa via Jina Reader ─────────
+            // Jina Reader (r.jina.ai) executa um browser headless real (similar ao Chrome)
+            // e retorna o conteúdo renderizado — ao contrário dos CDN scrapers simples
+            // que o YouTube bloqueia. Jina é a alternativa mais confiável sem API key.
+            //
+            // Detecção de live: buscamos no markdown do Jina links que contenham
+            // indicadores de live (🔴, AO VIVO, LIVE, etc.) e extraímos o watch?v= deles.
+            try {
+                const jinaUrl = `https://r.jina.ai/https://www.youtube.com/@${cleanHandle}/live`;
+                const jinaRes = await fetch(jinaUrl, {
+                    headers: {
+                        'Accept': 'text/plain',
+                        'X-No-Cache': 'true'
+                    }
+                });
+                if (jinaRes.ok) {
+                    const md = await jinaRes.text();
+
+                    // Procura por links com indicadores de live no texto ao redor
+                    // Formato do Jina: [Título com 🔴](https://www.youtube.com/watch?v=XXXXXXXX)
+                    const livePatterns = [
+                        // Link com emoji de live ou texto "AO VIVO" / "LIVE" antes do watch?v=
+                        /\[(?:[^\]]*(?:🔴|AO VIVO|ao vivo|LIVE|Live|live)[^\]]*)\]\(https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})[^)]*\)/i,
+                        // og:url ou canonical em HTML raw (fallback)
+                        /<meta property="og:url" content="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/,
+                        /<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/,
+                    ];
+
+                    for (const p of livePatterns) {
+                        const m = md.match(p);
+                        if (m) {
+                            console.log(`[M-Square] Live video ID via Jina Reader: ${m[1]}`);
+                            return { id: m[1], type: 'video' };
+                        }
+                    }
+                    console.warn(`[M-Square] Jina: nenhuma live encontrada para @${cleanHandle}`);
+                }
+            } catch (e) {
+                console.warn('[M-Square] Jina Reader falhou:', e);
+            }
+
+            // ─── FASE 1b: CDN scrapers como fallback (podem ser bloqueados pelo YT) ──
             const livePageUrl = `https://www.youtube.com/@${cleanHandle}/live`;
             const liveVideoId = await runScrapers(buildScrapers(livePageUrl), extractLiveVideoIdFromHtml);
             if (liveVideoId) {
-                console.log(`[M-Square] Live video ID encontrado: ${liveVideoId}`);
+                console.log(`[M-Square] Live video ID via CDN: ${liveVideoId}`);
                 return { id: liveVideoId, type: 'video' };
             }
 
