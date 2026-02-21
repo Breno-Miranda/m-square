@@ -315,15 +315,32 @@ body {
     background: rgba(8, 8, 16, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.08);
     cursor: default;
+    min-height: 250px;
     /*
-     * CONTENÇÃO VISUAL — abordagem definitiva.
-     * Não tentamos sobrescrever estilos internos do AdSense.
-     * overflow:hidden + clip-path garantem que NADA vaze visualmente,
-     * independente do que o AdSense faça internamente.
+     * === CONTENÇÃO NUCLEAR (equivalente CSS de Shadow Root) ===
+     *
+     * 4 camadas independentes de contenção. Se uma falhar, as outras seguram.
+     *
+     * 1. contain: paint layout
+     *    → Instrui o browser que NADA deste elemento pinta fora do seu box.
+     *    → Filhos com position:absolute/fixed são contidos aqui.
+     *    → O browser pode otimizar rendering sabendo que nada escapa.
+     *
+     * 2. isolation: isolate
+     *    → Cria um novo stacking context isolado.
+     *    → Impede que z-index dos filhos afetem elementos externos.
+     *
+     * 3. overflow: hidden
+     *    → Contenção clássica de layout — clipa filhos que ultrapassem.
+     *
+     * 4. clip-path: inset(0)
+     *    → Máscara de recorte no nível de PAINT (mais agressivo que overflow).
+     *    → Funciona até com position:fixed em browsers modernos.
      */
+    contain: paint layout;
+    isolation: isolate;
     overflow: hidden;
     clip-path: inset(0);
-    min-height: 250px;
 }
 
 /* Mobile: mantém min-height, remove aspect-ratio herdado do .video-item */
@@ -332,6 +349,23 @@ body {
         min-height: 250px !important;
         height: auto !important;
         aspect-ratio: unset !important;
+    }
+}
+
+/* Fade-in suave quando ads aparecem (após delay de 60s) */
+.ad-slot {
+    animation: adSlotFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes adSlotFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
 

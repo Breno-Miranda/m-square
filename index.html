@@ -505,7 +505,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.11.13</div>
+    <div class="version-badge">V0.11.17</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -662,17 +662,99 @@
          * - 1 vídeo   → 1 ad
          * - 2 vídeos  → 2 ads
          * - 3+ vídeos → 3 ads (cap)
+         *
+         * DELAY UX: Ads só aparecem após 60s de uso. O usuário primeiro
+         * curte as streams, depois os ads entram suavemente.
          */
+        let _adsReady = false;
+        let _adsTimer = null;
+
         function calcAdCount(nVideos) {
+            if (!_adsReady) return 0;
             if (nVideos < 1) return 0;
             return Math.min(3, nVideos);
         }
 
+        // Inicia o timer de 60s para habilitar ads
+        function startAdsDelayTimer() {
+            if (_adsTimer) clearTimeout(_adsTimer);
+            _adsTimer = setTimeout(() => {
+                if (_adsReady) return;
+                _adsReady = true;
+                console.log('[M-Square] ⏱️ 60s — injetando ads dinamicamente...');
+                injectAdsIntoGrid();
+            }, 60000); // 60 segundos
+        }
+
+        /**
+         * Injeta ad-slots entre os vídeos existentes SEM destruir o DOM.
+         * Mantém players, iframes, estado de mute — zero reload.
+         */
+        function injectAdsIntoGrid() {
+            const container = document.getElementById('videoContainer');
+            if (!container) return;
+
+            const videoItems = container.querySelectorAll('.video-item:not(.ad-slot):not(.empty-slot)');
+            const nVideos = videoItems.length;
+            if (nVideos < 1) return;
+
+            const maxAds = Math.min(3, nVideos);
+            const borders = ['border-primary', 'border-secondary', 'border-tertiary', 'border-gradient'];
+            let adsInserted = 0;
+            let adSlotCounter = 0;
+
+            // Insere um ad-slot DEPOIS de cada vídeo (até o cap)
+            videoItems.forEach((videoEl, i) => {
+                if (adsInserted >= maxAds) return;
+
+                const uniqueAdId = `ad-unit-${Date.now()}-${adSlotCounter++}`;
+                const bClass = borders[(i + 1) % borders.length];
+
+                const adDiv = document.createElement('div');
+                adDiv.className = `video-item ad-slot ${bClass}`;
+                adDiv.setAttribute('data-ad-index', String(adsInserted));
+                adDiv.innerHTML = `
+                    <div class="ad-placeholder" id="ad-placeholder-delayed-${adsInserted}">
+                        <div class="ad-loading-spinner"></div>
+                        <span>Publicidade</span>
+                    </div>
+                    <ins class="adsbygoogle ad-ins"
+                         id="${uniqueAdId}"
+                         style="display:block;"
+                         data-ad-client="ca-pub-7844284078845131"
+                         data-ad-slot="6848758884"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true">
+                    </ins>`;
+
+                // Insere DEPOIS do vídeo atual
+                videoEl.after(adDiv);
+                adsInserted++;
+            });
+
+            // Recalcula o layout do grid (cols/rows)
+            updateGridLayout();
+
+            // Push do AdSense para os novos slots
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    try {
+                        document.querySelectorAll('ins.adsbygoogle:not([data-ad-status])').forEach(() => {
+                            (window.adsbygoogle = window.adsbygoogle || []).push({});
+                        });
+                        console.log('[M-Square] ✅ Ads injetados e AdSense push efetuado.');
+                    } catch (e) {
+                        console.warn('[M-Square] Falha ao inicializar AdSense delayed:', e);
+                    }
+                    watchAndFixAdFrame();
+                });
+            });
+        }
+
         function updateGridLayout() {
             const container = document.getElementById('videoContainer');
-            const nVideos = playerIds.length;
-            const nAds = calcAdCount(nVideos);
-            const totalCells = nVideos + nAds + 1; // +1 para o botão de adicionar
+            // Conta todos os filhos reais do grid (vídeos + ads injetados + empty slots)
+            const totalCells = container.children.length || 1;
 
             const cols = Math.ceil(Math.sqrt(totalCells));
             const rows = Math.ceil(totalCells / cols);
@@ -817,12 +899,88 @@
         // é executado após o CSS. Usamos MutationObserver + setProperty
         // com flag 'important' para vencer qualquer inline style.
 
-        // ─── ADSENSE CONTAINMENT ─────────────────────────────────────────────
-        // A contenção é feita 100% via CSS (overflow:hidden + clip-path:inset(0)).
-        // NÃO sobrescrevemos estilos internos do AdSense — isso causa guerra de
-        // estilos que o AdSense vence. O CSS garante que nada vaze visualmente.
+        // ─── ADSENSE AD WATCHER ──────────────────────────────────────────────
+        // Em vez de sobrescrever estilos do AdSense (causa guerra de estilos),
+        // usamos CSS transform para centralizar e escalar o iframe do ad.
+        // Transforms NÃO afetam layout, então o AdSense não interfere.
+        //
+        // Fluxo:
+        // 1. MutationObserver detecta novos iframes nos ad-slots
+        // 2. Mede o tamanho do slot e do iframe
+        // 3. Calcula scale para preencher o slot mantendo proporção
+        // 4. Aplica transform: scale() + translate() para centralizar
+        // 5. Re-verifica a cada 3s (AdSense pode re-renderizar)
+
         function watchAndFixAdFrame() {
-            console.log('[M-Square] AdSense containment via CSS — nenhuma intervenção JS necessária.');
+            const slots = document.querySelectorAll('.ad-slot');
+            if (!slots.length) return;
+
+            // Observer para detectar novos elementos nos slots
+            const observer = new MutationObserver(() => {
+                requestAnimationFrame(fitAllAds);
+            });
+
+            slots.forEach(slot => {
+                observer.observe(slot, { childList: true, subtree: true, attributes: true });
+            });
+
+            // Verificação inicial + periódica
+            fitAllAds();
+            setInterval(fitAllAds, 3000);
+
+            console.log('[M-Square] AdWatcher ativo em', slots.length, 'slot(s)');
+        }
+
+        function fitAllAds() {
+            document.querySelectorAll('.ad-slot').forEach(slot => {
+                const iframe = slot.querySelector('iframe[id^="aswift_"], iframe[id^="google_ads"]');
+                if (!iframe) return;
+
+                const slotRect = slot.getBoundingClientRect();
+                const iframeRect = iframe.getBoundingClientRect();
+
+                // Ignora iframes ainda sem dimensões
+                if (iframeRect.width < 10 || iframeRect.height < 10) return;
+                if (slotRect.width < 10 || slotRect.height < 10) return;
+
+                // Encontra o host div (container direto do iframe criado pelo AdSense)
+                const hostDiv = iframe.closest('[id$="_host"]') || iframe.parentElement;
+
+                // Calcula quanto o conteúdo do ad precisa escalar para preencher o slot
+                const scaleX = slotRect.width / iframeRect.width;
+                const scaleY = slotRect.height / iframeRect.height;
+                // Usa o MENOR scale para manter proporção (fit), ou MAIOR para preencher (cover)
+                const scale = Math.min(scaleX, scaleY);
+
+                // Calcula offset para centralizar após o scale
+                const scaledW = iframeRect.width * scale;
+                const scaledH = iframeRect.height * scale;
+                const offsetX = (slotRect.width - scaledW) / 2;
+                const offsetY = (slotRect.height - scaledH) / 2;
+
+                // Calcula posição atual do iframe relativo ao slot
+                const currentX = iframeRect.left - slotRect.left;
+                const currentY = iframeRect.top - slotRect.top;
+
+                // O transform-origin é top-left do iframe
+                // Precisamos transladar para centralizar
+                const translateX = offsetX - (currentX * scale - currentX);
+                const translateY = offsetY - (currentY * scale - currentY);
+
+                // Aplica no host div (que contém o iframe)
+                if (hostDiv && hostDiv !== slot) {
+                    hostDiv.style.setProperty('transform-origin', '0 0', 'important');
+                    hostDiv.style.setProperty('transform', `translate(${offsetX}px, ${offsetY}px) scale(${scale})`, 'important');
+                    hostDiv.style.setProperty('width', `${iframeRect.width}px`, 'important');
+                    hostDiv.style.setProperty('height', `${iframeRect.height}px`, 'important');
+                } else {
+                    // Fallback: aplica direto no iframe
+                    iframe.style.setProperty('transform-origin', '0 0', 'important');
+                    iframe.style.setProperty('transform', `translate(${offsetX}px, ${offsetY}px) scale(${scale})`, 'important');
+                }
+
+                console.log(`[M-Square] ✅ Ad fitted: ${Math.round(iframeRect.width)}x${Math.round(iframeRect.height)} → scale ${scale.toFixed(2)} | slot ${Math.round(slotRect.width)}x${Math.round(slotRect.height)}`);
+            });
         }
 
         function handleVideoClick(e, overlay, id, platform) {
@@ -1581,6 +1739,7 @@
 
         function onYouTubeIframeAPIReady() {
             initApp();
+            startAdsDelayTimer(); // Inicia timer de 60s para ads
             const syncEnabled = localStorage.getItem('msquare_live_sync') === 'true';
             if (syncEnabled) startLiveSync();
         }
