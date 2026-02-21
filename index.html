@@ -212,7 +212,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.11.04</div>
+    <div class="version-badge">V0.11.05</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -372,14 +372,12 @@
                                 <div class="ad-loading-spinner"></div>
                                 <span>Publicidade</span>
                             </div>
-                            <div class="ad-ins-wrapper">
-                                <ins class="adsbygoogle ad-ins"
-                                     style="display:block"
-                                     data-ad-client="ca-pub-7844284078845131"
-                                     data-ad-slot="6848758884"
-                                     data-ad-format="auto"
-                                     data-full-width-responsive="true"></ins>
-                            </div>
+                            <ins class="adsbygoogle ad-ins"
+                                 style="display:block;width:100%;height:100%;"
+                                 data-ad-client="ca-pub-7844284078845131"
+                                 data-ad-slot="6848758884"
+                                 data-ad-format="rectangle">
+                            </ins>
                         </div>`;
                 }
 
@@ -427,46 +425,20 @@
                     </div>`;
             }).join('');
 
-            // ─── INICIALIZAÇÃO DO ADSENSE ─────────────────────────────────────
-            // ESTRATÉGIA: Ler o clientWidth real do wrapper DEPOIS do layout do grid
-            // e injetar via style inline na <ins> antes do push({}).
-            // Isso é necessário porque o AdSense com data-full-width-responsive
-            // mede o offsetWidth do elemento pai no momento do push(), e quando
-            // a <ins> está dentro de um grid dinâmico, esse valor pode ser 0 ou
-            // incorreto sem a injeção explícita de dimensões em pixels.
+            // ─── INICIALIZA O ADSENSE ──────────────────────────────────────────
+            // Formato: rectangle (fixo) — não precisa medir clientWidth.
+            // O AdSense rectangle respeita width:100% height:100% do container.
             if (nAds > 0) {
-                const initAds = () => {
-                    try {
-                        const uninitializedIns = document.querySelectorAll('ins.adsbygoogle:not([data-ad-status])');
-
-                        uninitializedIns.forEach(ins => {
-                            // Lê a largura real do wrapper (container absoluto que preenche a célula do grid)
-                            const wrapper = ins.closest('.ad-ins-wrapper');
-                            const slot = ins.closest('.ad-slot');
-
-                            // Usa o clientWidth do wrapper, ou do slot como fallback
-                            const availableWidth = (wrapper && wrapper.clientWidth > 0)
-                                ? wrapper.clientWidth
-                                : (slot && slot.clientWidth > 0 ? slot.clientWidth : 300);
-
-                            // Injeta dimensões explícitas em px — o AdSense usa isso para escolher o formato
-                            ins.style.display = 'block';
-                            ins.style.width = availableWidth + 'px';
-                            ins.style.height = 'auto';
-
-                            console.log(`[M-Square] AdSense push: largura disponível = ${availableWidth}px`);
-                            (window.adsbygoogle = window.adsbygoogle || []).push({});
-                        });
-                    } catch (e) {
-                        console.warn('[M-Square] Falha ao injetar anúncio:', e);
-                    }
-                };
-
-                // Double rAF: garante que o browser finalizou o layout do grid CSS
-                // antes de medir clientWidth. Um único rAF pode ser cedo demais.
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        initAds();
+                        try {
+                            document.querySelectorAll('ins.adsbygoogle:not([data-ad-status])').forEach(() => {
+                                (window.adsbygoogle = window.adsbygoogle || []).push({});
+                            });
+                            console.log('[M-Square] AdSense rectangle slot inicializado.');
+                        } catch (e) {
+                            console.warn('[M-Square] Falha ao inicializar AdSense:', e);
+                        }
                     });
                 });
             }

@@ -299,42 +299,39 @@ body {
 }
 
 /* ============================================================
- * AD SLOT — SOLUÇÃO DEFINITIVA v3
+ * AD SLOT — SOLUÇÃO DEFINITIVA (formato fixo rectangle)
  *
- * O AdSense gera: div#aswift_host { display:inline-block; overflow:visible }
- *                   └─ iframe { position:absolute; left:0; top:0 }
+ * Regra de ouro AdSense em grids/dashboards:
+ *   → Usar data-ad-format="rectangle" (não "auto")
+ *   → Container com altura FIXA correspondendo ao formato
+ *   → overflow:hidden para conter o ad sem bleeding
+ *   → <ins> com width:100%; height:100% preenchendo o container
  *
- * Problema: overflow:visible no host + position:absolute no iframe
- * → BLEEDING: o iframe vaza para fora da célula cobrindo vídeos
- *
- * Solução:
- *   1. .ad-slot: position:relative + overflow:hidden (barreira externa)
- *   2. .ad-ins-wrapper: position:absolute inset:0 + overflow:hidden
- *      → Esta é a barreira REAL que corta o bleeding do iframe
- *      + display:flex + center → centraliza o inline-block do AdSense
- *   3. <ins> em position:static (fluxo puro) → AdSense mede clientWidth
+ * "auto" faz o AdSense ignorar o container e escolher o tamanho.
+ * "rectangle" respeita as dimensões que definimos.
  * ============================================================ */
 
 .ad-slot {
-    /* Participa normalmente do grid — mesma altura que os vídeos */
     position: relative;
-    background: rgba(10, 10, 20, 0.85);
+    background: rgba(8, 8, 16, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    /* overflow:visible para o AdSense não ser clipado */
     overflow: hidden;
+    /* contém o anúncio — sem bleeding */
     cursor: default;
+    /* Altura fixa = formato rectangle (300x250 / 336x280) */
+    /* O AdSense rectangle respeita isso — diferente do "auto" */
+    height: 280px;
 }
 
-/* Mobile: o ad-slot vira bloco de altura fixa */
+/* Mobile: mantém altura fixa, remove aspect-ratio herdado do .video-item */
 @media (max-width: 768px) {
     .ad-slot {
         height: 280px !important;
         aspect-ratio: unset !important;
-        min-height: 280px;
     }
 }
 
-/* Placeholder de loading (fundo) */
+/* Placeholder de loading — fica atrás do anúncio */
 .ad-placeholder {
     position: absolute;
     inset: 0;
@@ -343,7 +340,7 @@ body {
     justify-content: center;
     align-items: center;
     gap: 10px;
-    color: #2a2a3a;
+    color: #252535;
     font-size: 0.65rem;
     letter-spacing: 1.5px;
     text-transform: uppercase;
@@ -353,105 +350,30 @@ body {
     transition: opacity 0.5s ease;
 }
 
-/* Esconde placeholder quando o AdSense preencher o slot */
-.ad-slot:has(.ad-ins[data-ad-status="filled"]) .ad-placeholder,
-.ad-slot:has(.ad-ins[data-ad-status="unfilled"]) .ad-placeholder {
+/* Esconde placeholder quando AdSense preencher */
+.ad-slot:has(.adsbygoogle[data-ad-status="filled"]) .ad-placeholder,
+.ad-slot:has(.adsbygoogle[data-ad-status="unfilled"]) .ad-placeholder {
     opacity: 0;
 }
 
 /*
- * WRAPPER CRÍTICO:
- * - position:absolute + inset:0 → preenche toda a célula do grid
- * - overflow:hidden → ANTI-BLEEDING: corta o iframe do AdSense
- *   (o AdSense gera iframe position:absolute dentro de um host
- *   display:inline-block + overflow:visible — sem overflow:hidden
- *   aqui, o iframe vaza para fora da célula)
- * - display:flex + align-items/justify-content:center → centraliza
- *   o inline-block gerado pelo AdSense dentro da célula
- */
-.ad-ins-wrapper {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    /* ← CORTA O BLEEDING DO IFRAME ADSENSE */
-    display: flex;
-    align-items: center;
-    /* centraliza verticalmente */
-    justify-content: center;
-    /* centraliza horizontalmente */
-    z-index: 1;
-}
-
-/*
- * A <ins> em POSITION:STATIC (fluxo puro) dentro do wrapper.
- * - static: AdSense mede o clientWidth do elemento corretamente
- * - block:  necessário para o AdSense reconhecer o slot
- * - width em px é injetado pelo JS antes do push({})
- * - flex-shrink:0 evita que o flex container comprima o anúncio
+ * A <ins> preenche 100% do container (280px de altura).
+ * width:100% + height:100% — o AdSense rectangle respeita isso.
+ * Sem wrappers extras, sem position:absolute, sem mágica.
  */
 .ad-ins {
     display: block !important;
-    position: static !important;
-    /* Fluxo puro — AdSense mede corretamente */
-    height: auto !important;
-    flex-shrink: 0;
-    /* Não deixa o flex comprimir o anúncio */
-}
-
-/*
- * OVERRIDE DAS PROPRIEDADES INLINE INJETADAS PELO ADSENSE
- *
- * O AdSense injeta no div#aswift_N_host:
- *   display:inline-block; width:Xpx; height:Ypx; overflow:visible
- *
- * E no iframe#aswift_N:
- *   position:absolute; left:0; top:0; width:Xpx; height:Ypx
- *
- * Sobrescrevemos TUDO com !important para neutralizar o bleeding.
- */
-
-/* Host div gerado pelo AdSense */
-.ad-ins>div {
-    display: block !important;
-    /* inline-block → block: ocupa 100% da largura */
     width: 100% !important;
-    /* largura px fixa → fluída */
-    height: auto !important;
-    /* altura px fixa → automática */
-    overflow: hidden !important;
-    /* visible → hidden: contém o iframe */
+    height: 100% !important;
     position: relative !important;
-    /* mantém como contexto de posição */
-}
-
-/* iframe injetado pelo AdSense */
-.ad-ins>div>iframe {
-    position: relative !important;
-    /* absolute → relative: volta ao fluxo normal */
-    left: auto !important;
-    /* cancela left:0 */
-    top: auto !important;
-    /* cancela top:0 */
-    width: 100% !important;
-    /* px fixo → fluído */
-    height: auto !important;
-    /* px fixo → automático */
-    min-height: 250px !important;
-    /* garante altura mínima visível */
-    max-width: 100% !important;
-    /* não extrapola a célula */
-    min-width: 0 !important;
-    /* cancela qualquer min-width */
-    max-height: none !important;
-    /* cancela qualquer max-height */
 }
 
 /* Spinner animado no placeholder */
 .ad-loading-spinner {
     width: 28px;
     height: 28px;
-    border: 2px solid rgba(255, 255, 255, 0.08);
-    border-top-color: rgba(131, 58, 180, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.06);
+    border-top-color: rgba(131, 58, 180, 0.6);
     border-radius: 50%;
     animation: adSpinnerRotate 1.2s linear infinite;
 }
