@@ -13,9 +13,22 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Square | Video steams square multiScreen</title>
-    <meta name="description" content="M-Square: Visualização simultânea de múltiplos vídeos com design premium.">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title>M-Square | Assista Múltiplas Streams Simultaneamente (YouTube & Kick)</title>
+    <meta name="description"
+        content="M-Square é a plataforma premium para assistir múltiplos vídeos, lives e transmissões ao mesmo tempo. Suporte para YouTube e Kick, modo foco de áudio e layout dinâmico. Ideal para gamers, investidores e entusiastas.">
+    <meta name="keywords"
+        content="multi stream, watch multiple live streams, youtube multitwitch, multi kick, video grid, monitoramento de vídeos, multi tela, assistir múltiplas lives, simultâneo">
+
+    <!-- Open Graph / SEO Social -->
+    <meta property="og:title" content="M-Square | Multi Streams Premium" />
+    <meta property="og:description"
+        content="Assista vídeos, lives e eventos simultaneamente em uma única tela. Crie sua própria grade de transmissão com YouTube e Kick." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://m-square.com" />
+    <meta property="og:image" content="https://m-square.com/favicon.svg" />
+
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%2233%22 height=%22100%22 fill=%22%232980b9%22 rx=%226%22/><rect x=%2233.5%22 width=%2233%22 height=%22100%22 fill=%22%2327ae60%22 rx=%226%22/><rect x=%2267%22 width=%2233%22 height=%22100%22 fill=%22%23f39c12%22 rx=%226%22/></svg>">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,12 +43,17 @@
 
 <body>
 
-    <div class="floating-logo">
-        <span class="logo-icon">🚀</span>
-        <span class="logo-text">M-SQUARE</span>
+    <div class="floating-logo" style="display: flex; align-items: center; gap: 8px;">
+        <svg viewBox="0 0 100 100" style="width: 24px; height: 24px;">
+            <rect width="33" height="100" fill="#2980b9" rx="6" />
+            <rect x="33.5" width="33" height="100" fill="#27ae60" rx="6" />
+            <rect x="67" width="33" height="100" fill="#f39c12" rx="6" />
+        </svg>
+        <span class="logo-text"></span>
     </div>
 
     <main class="grid-main">
+        <h1 class="sr-only">M-Square - Plataforma para assistir múltiplos vídeos e streams ao mesmo tempo</h1>
         <div id="videoContainer" class="video-grid">
             <!-- Os vídeos serão injetados via JS -->
         </div>
@@ -43,9 +61,17 @@
 
     <div class="fab-wrapper">
         <div class="fab-menu" id="fabMenu">
+            <button class="fab-item" onclick="openHelpModal(); toggleFabMenu();" title="Como Funciona">
+                <span>❓</span>
+                <span class="fab-label">Ajuda</span>
+            </button>
             <button class="fab-item" onclick="globalMuteAll(); toggleFabMenu();" title="Silenciar Tudo">
                 <span>🔇</span>
                 <span class="fab-label">Mutar Tudo</span>
+            </button>
+            <button class="fab-item" onclick="clearAllStreams(); toggleFabMenu();" title="Limpar Grade">
+                <span>🗑️</span>
+                <span class="fab-label">Limpar Grade</span>
             </button>
             <button class="fab-item" onclick="shareCurrentGrid(); toggleFabMenu();" title="Compartilhar Grade">
                 <span>🔗</span>
@@ -84,6 +110,11 @@
                 </button>
 
                 <div id="manageSection">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <span style="font-size: 0.95rem; font-weight: 600; color: #eee;">Sua Grade Atual</span>
+                        <button class="btn-clear-all" onclick="clearAllStreams()">🗑 Limpar Tudo</button>
+                    </div>
                     <div id="inputContainer">
                         <!-- Inputs dinâmicos -->
                     </div>
@@ -112,7 +143,76 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.10.82</div>
+    <!-- Modal de Ajuda (Como Funciona) -->
+    <div id="helpModal" class="modal-overlay" onclick="if(event.target === this) closeHelpModal()">
+        <div class="modal-content help-modal-content">
+            <div class="modal-header">
+                <h3>Como Funciona o M-Square?</h3>
+                <p style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">Aqui estão as principais dicas para tirar o
+                    máximo proveito da plataforma:</p>
+            </div>
+            <div class="modal-body-scroll help-body">
+                <div class="help-feature">
+                    <div class="help-icon">➕</div>
+                    <div class="help-text"><strong>Adicione Streams</strong><br>Use a busca do YouTube ou cole links
+                        diretos do YouTube/Kick nas configurações.</div>
+                </div>
+                <div class="help-feature">
+                    <div class="help-icon">�</div>
+                    <div class="help-text"><strong>Lives Automáticas (Beta)</strong><br>Cole a URL com @ do canal (ex:
+                        youtube.com/@Canal) e manteremos a tela sintonizada sempre na live atual deles.</div>
+                </div>
+                <div class="help-feature">
+                    <div class="help-icon">�🔊</div>
+                    <div class="help-text"><strong>Smart Áudio Focus</strong><br>Clique sobre a tela de qualquer vídeo
+                        para ouvir apenas ele. Os demais ficarão no mudo automaticamente.</div>
+                </div>
+                <div class="help-feature">
+                    <div class="help-icon">🔗</div>
+                    <div class="help-text"><strong>Compartilhamento</strong><br>Monte a grade perfeita para o campeonato
+                        e clique em "Compartilhar" para enviar o link exato para amigos.</div>
+                </div>
+                <div class="help-feature">
+                    <div class="help-icon">🔄</div>
+                    <div class="help-text"><strong>Autoreconnect</strong><br>Ative o "Monitoramento Ao Vivo" nas
+                        configurações. Se uma stream cair ou parar, tentaremos reconectá-la!</div>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end;">
+                <button class="btn-save" onclick="closeHelpModal()">Entendi, valeu!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dialog - Custom Alert -->
+    <div id="customAlertModal" class="modal-overlay" style="z-index: 3000;">
+        <div class="modal-content custom-dialog-content">
+            <div class="dialog-icon" id="customAlertIcon">ℹ️</div>
+            <h3 id="customAlertTitle">Aviso</h3>
+            <p id="customAlertText">Mensagem</p>
+            <div class="modal-footer"
+                style="justify-content: center; margin-top:20px; border-top: none; padding-top:0;">
+                <button class="btn-save" style="width: 100%;" onclick="closeCustomAlert()">Entendi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dialog - Custom Confirm -->
+    <div id="customConfirmModal" class="modal-overlay" style="z-index: 3000;">
+        <div class="modal-content custom-dialog-content">
+            <div class="dialog-icon">⚠️</div>
+            <h3 id="customConfirmTitle">Atenção</h3>
+            <p id="customConfirmText">Mensagem</p>
+            <div class="modal-footer"
+                style="justify-content: space-between; margin-top:20px; border-top: none; padding-top:0; gap: 10px;">
+                <button class="btn-close" style="flex: 1;" onclick="closeCustomConfirm()">Cancelar</button>
+                <button class="btn-danger-action" style="flex: 1;" onclick="executeCustomConfirm()">Sim,
+                    prosseguir</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="version-badge">V0.10.98</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -174,18 +274,21 @@
 
         function shareCurrentGrid() {
             const streams = getSavedIds();
+            if (!streams || streams.length === 0) {
+                showCustomAlert('Aviso', 'Sua grade está vazia. Adicione vídeos antes de compartilhar.');
+                return;
+            }
             try {
                 const encoded = btoa(JSON.stringify(streams));
                 const shareUrl = `${window.location.origin}${window.location.pathname}?grid=${encoded}`;
 
                 navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert("Link de compartilhamento copiado! Envie para quem você quiser.");
+                    showCustomAlert("Link Copiado!", `Envie o link abaixo para quem você quiser:<br><br><input type="text" value="${shareUrl}" readonly style="width:100%; padding:10px; background:#000; color:var(--accent-primary); border:1px solid var(--border-color); border-radius:8px;" onclick="this.select()">`);
                 }).catch(err => {
-                    console.error("Erro ao copiar link:", err);
-                    prompt("Copie seu link de compartilhamento:", shareUrl);
+                    showCustomAlert("Copie o Link", `Não foi possível copiar automaticamente. Copie manualmente abaixo:<br><br><input type="text" value="${shareUrl}" readonly style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid var(--border-color); border-radius:8px;" onclick="this.select()">`);
                 });
             } catch (e) {
-                alert("Erro ao gerar link de compartilhamento.");
+                showCustomAlert("Erro 🤔", "Erro interno ao gerar link de compartilhamento.");
             }
         }
 
@@ -265,11 +368,16 @@
                 if (item.type === 'ad') {
                     return `
                         <div class="video-item ad-slot ${bClass}">
-                            <div class="ad-label">Patrocinado</div>
+                            <!-- Publicidade -->
+                            <div class="ad-placeholder">
+                                <div class="ad-loading-spinner"></div>
+                                <span>Publicidade</span>
+                            </div>
+                            <div class="ad-label">Google AdSense</div>
                             <ins class="adsbygoogle"
-                                 style="display:block; width:100%; height:100%;"
+                                 style="display:block; width:100%; height:100%; position:absolute; top:0; left:0; z-index:10;"
                                  data-ad-client="ca-pub-7844284078845131"
-                                 data-ad-slot="XXXXXXXXXX"
+                                 data-ad-slot="6848758884"
                                  data-ad-format="auto"
                                  data-full-width-responsive="true"></ins>
                         </div>`;
@@ -292,6 +400,19 @@
                             <div class="video-overlay" onclick="handleVideoClick(event, this, '${info.id}', 'kick')"></div>
                             <iframe id="${kId}" src="https://player.kick.com/${info.id}?autoplay=true&muted=true" 
                                 frameborder="0" scrolling="no" allowfullscreen="true" style="width:100%; height:100%;">
+                            </iframe>
+                        </div>`;
+                }
+
+                if (info.platform === 'youtube-live-auto') {
+                    const cId = `channel-${videoIndex}`;
+                    return `
+                        <div class="video-item ${bClass} is-live" id="container-${cId}" data-platform="youtube" data-id="${info.id}" data-muted="true">
+                            <div class="live-badge">SEMPRE LIVE</div>
+                            <button class="btn-delete-video" onclick="removeStreamFromGrid(event, ${videoIndex})" title="Remover vídeo">✕</button>
+                            <div class="video-overlay" onclick="handleVideoClick(event, this, '${cId}', 'youtube')"></div>
+                            <iframe id="${cId}" src="https://www.youtube.com/embed/live_stream?channel=${info.id}&autoplay=1&mute=1&enablejsapi=1" 
+                                frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%; height:100%;">
                             </iframe>
                         </div>`;
                 }
@@ -345,6 +466,8 @@
                 if (platform === 'youtube') {
                     const p = players[element.getAttribute('data-id')];
                     if (p) p.mute();
+                } else if (platform === 'youtube-channel') {
+                    setAudioStateChannel(element, true);
                 } else {
                     setAudioStateKick(element, true);
                 }
@@ -362,11 +485,21 @@
             if (platform === 'youtube') {
                 const p = players[targetId];
                 if (p) { p.unMute(); p.playVideo(); }
+            } else if (platform === 'youtube-channel') {
+                setAudioStateChannel(element, false);
             } else {
                 setAudioStateKick(element, false);
             }
             element.setAttribute('data-muted', 'false');
             showStatus(elId, 'Audio Focus 🔊');
+        }
+
+        function setAudioStateChannel(element, shouldMute) {
+            const iframe = element.querySelector('iframe');
+            if (!iframe) return;
+            element.setAttribute('data-muted', shouldMute ? 'true' : 'false');
+            // Envia comando para Youtube nativo via postMessage
+            iframe.contentWindow.postMessage('{"event":"command","func":"' + (shouldMute ? 'mute' : 'unMute') + '","args":""}', '*');
         }
 
         function setAudioStateKick(element, shouldMute) {
@@ -405,6 +538,13 @@
                     if (p && typeof p.mute === 'function') p.mute();
                     const container = document.getElementById(`container-${pId}`);
                     if (container) container.setAttribute('data-muted', 'true');
+                }
+            });
+            // YouTube Channel Iframes
+            document.querySelectorAll('.video-item[data-platform="youtube-channel"]').forEach(item => {
+                const iframe = item.querySelector('iframe');
+                if (iframe && iframe.id !== excludeId) {
+                    setAudioStateChannel(item, true);
                 }
             });
             // Kick (Agressivo: Envia para todos, exceto o excluído)
@@ -533,7 +673,11 @@
             const container = document.getElementById('inputContainer');
             container.innerHTML = ids.map((videoData, index) => {
                 const info = typeof videoData === 'string' ? { id: videoData, platform: 'youtube' } : videoData;
-                const value = info.platform === 'kick' ? `kick.com/${info.id}` : info.id;
+                let value = info.id;
+                if (info.platform === 'kick') value = `kick.com/${info.id}`;
+                if (info.platform === 'youtube-live-auto') value = info.displayHandle || `@${info.id}`;
+                if (info.platform === 'youtube-channel') value = `@${info.id}`;
+
                 return `<div class="input-group"><label>Vídeo ${index + 1}</label><div class="input-row">
                         <input type="text" class="stream-input" value="${value}">${ids.length > 1 ? `<button class="btn-remove" onclick="removeStream(${index})">🗑</button>` : ''}
                         </div></div>`;
@@ -556,38 +700,254 @@
 
         function removeStreamFromGrid(e, index) {
             if (e) e.stopPropagation();
-            const ids = getSavedIds();
-            if (ids.length <= 1) return alert('Mantenha pelo menos um vídeo.');
-            if (confirm('Remover este vídeo?')) {
-                ids.splice(index, 1);
-                localStorage.setItem('msquare_streams', JSON.stringify(ids));
-                updateSystemState(ids);
-            }
+            showCustomConfirm(
+                'Remover Vídeo',
+                'Tem certeza que deseja remover esta stream da grade?',
+                () => {
+                    const ids = getSavedIds();
+                    ids.splice(index, 1);
+                    localStorage.setItem('msquare_streams', JSON.stringify(ids));
+                    updateSystemState(ids);
+                }
+            );
         }
 
-        function saveSettings() {
+        function clearAllStreams() {
+            showCustomConfirm(
+                'Limpar Grade',
+                'Tem certeza que deseja remover todos os vídeos monitorados no painel?',
+                () => {
+                    localStorage.setItem('msquare_streams', JSON.stringify([]));
+                    updateSystemState([]);
+                    const container = document.getElementById('inputContainer');
+                    if (container && document.getElementById('settingsModal').style.display === 'flex') {
+                        renderInputs([]);
+                    }
+                }
+            );
+        }
+
+        async function saveSettings() {
             const inputs = document.querySelectorAll('.stream-input');
-            const newInfos = Array.from(inputs).map(i => extractVideoInfo(i.value.trim())).filter(info => info && info.id);
-            if (newInfos.length === 0) return alert('Adicione um vídeo válido.');
+            const newInfos = [];
+
+            const btnSave = document.querySelector('.btn-save');
+            const originalText = btnSave.innerText;
+            btnSave.innerText = 'Processando...';
+            btnSave.disabled = true;
+
+            for (let i of inputs) {
+                const val = i.value.trim();
+                if (!val) continue;
+
+                let info = extractVideoInfo(val);
+                if (info && info.platform === 'youtube-handle') {
+                    const resolved = await resolveYouTubeLiveFromHandle(info.id);
+                    if (resolved) {
+                        if (resolved.type === 'video') {
+                            // Video ID direto da live — embed mais confiável, suporta múltiplas lives
+                            info = { id: resolved.id, platform: 'youtube', displayHandle: `youtube.com/@${info.id}/live` };
+                        } else {
+                            // Channel ID — fallback para live_stream?channel=
+                            info = { id: resolved.id, platform: 'youtube-live-auto', displayHandle: `youtube.com/@${info.id}/live` };
+                        }
+                    } else {
+                        if (info.id.length === 11) {
+                            info = { id: info.id, platform: 'youtube' };
+                        } else {
+                            console.warn("Falha ao resolver handle:", info.id);
+                            continue;
+                        }
+                    }
+                }
+
+                if (info && info.id) newInfos.push(info);
+            }
+
+            btnSave.innerText = originalText;
+            btnSave.disabled = false;
+
             localStorage.setItem('msquare_streams', JSON.stringify(newInfos));
             updateSystemState(newInfos);
             closeModal();
         }
 
+        async function resolveYouTubeLiveFromHandle(handle) {
+            const cleanHandle = handle.replace('@', '');
+
+            // Helpers compartilhados ─────────────────────────────────────────────────
+
+            /**
+             * Tenta extrair o video ID (11 chars) de uma live ativa a partir do HTML.
+             * Prioriza og:url e canonical que apontam diretamente para o watch?v=xxx
+             * quando o canal está ao vivo.
+             */
+            function extractLiveVideoIdFromHtml(content) {
+                if (!content) return null;
+                const patterns = [
+                    /<meta property="og:url" content="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/,
+                    /<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/,
+                    /"videoId":"([a-zA-Z0-9_-]{11})"[^}]*"isLive":true/,
+                    /"isLive":true[^}]*"videoId":"([a-zA-Z0-9_-]{11})"/,
+                ];
+                for (const p of patterns) {
+                    const m = content.match(p);
+                    if (m) return m[1];
+                }
+                return null;
+            }
+
+            /** Extrai Channel ID (UCxxxx) do HTML da página do canal. */
+            function extractChannelIdFromHtml(content) {
+                if (!content) return null;
+                const patterns = [
+                    /"externalId":"(UC[a-zA-Z0-9_-]{22})"/,
+                    /data-channel-external-id="(UC[a-zA-Z0-9_-]{22})"/,
+                    /"channelId":"(UC[a-zA-Z0-9_-]{22})"/,
+                    /"browseId":"(UC[a-zA-Z0-9_-]{22})"/,
+                    /itemprop="identifier" content="(UC[a-zA-Z0-9_-]{22})"/,
+                    /youtube\.com\/channel\/(UC[a-zA-Z0-9_-]{22})/,
+                ];
+                for (const p of patterns) {
+                    const m = content.match(p);
+                    if (m) return m[1];
+                }
+                return null;
+            }
+
+            // CDN scrapers configuráveis ─────────────────────────────────────────────
+            function buildScrapers(targetUrl) {
+                return [
+                    {
+                        name: 'codetabs (CDN global)',
+                        fetch: () => fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`),
+                        extract: async (res) => res.text()
+                    },
+                    {
+                        name: 'thingproxy (Freeboard CDN)',
+                        fetch: () => fetch(`https://thingproxy.freeboard.io/fetch/${targetUrl}`),
+                        extract: async (res) => res.text()
+                    },
+                    {
+                        name: 'allorigins (JSON wrapper)',
+                        fetch: () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`),
+                        extract: async (res) => { const d = await res.json(); return d.contents; }
+                    },
+                    {
+                        name: 'corsproxy.io (raw HTML)',
+                        fetch: () => fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`),
+                        extract: async (res) => res.text()
+                    }
+                ];
+            }
+
+            async function runScrapers(scrapers, extractFn) {
+                for (const scraper of scrapers) {
+                    try {
+                        const res = await scraper.fetch();
+                        if (!res.ok) { console.warn(`[M-Square] ${scraper.name}: HTTP ${res.status}`); continue; }
+                        const content = await scraper.extract(res);
+                        const id = extractFn(content);
+                        if (id) { console.log(`[M-Square] Encontrado via ${scraper.name}: ${id}`); return id; }
+                        console.warn(`[M-Square] ${scraper.name}: não encontrado`);
+                    } catch (e) {
+                        console.warn(`[M-Square] ${scraper.name} falhou:`, e);
+                    }
+                }
+                return null;
+            }
+
+            // ─── FASE 1: Buscar video ID real da live ativa (/live page) ─────────────
+            // Scraping da página /@Handle/live que, quando há live ativa,
+            // expõe o og:url/canonical com o watch?v=VIDEO_ID específico.
+            // Isso resolve o problema de múltiplos streams simultâneos: pegamos
+            // o video ID exato em vez de depender do live_stream?channel= genérico.
+            const livePageUrl = `https://www.youtube.com/@${cleanHandle}/live`;
+            const liveVideoId = await runScrapers(buildScrapers(livePageUrl), extractLiveVideoIdFromHtml);
+            if (liveVideoId) {
+                console.log(`[M-Square] Live video ID encontrado: ${liveVideoId}`);
+                return { id: liveVideoId, type: 'video' };
+            }
+
+            // ─── FASE 2: API interna YouTube (youtubei/v1) → Channel ID ──────────────
+            // Se não encontramos a live ativa, resolvemos o Channel ID para usar
+            // o embed live_stream?channel= que tentará exibir a live quando ativa.
+            try {
+                const ytInternalUrl = 'https://www.youtube.com/youtubei/v1/resolve_url?prettyPrint=false';
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(ytInternalUrl)}`;
+                const body = {
+                    url: `https://www.youtube.com/@${cleanHandle}`,
+                    context: {
+                        client: { clientName: 'WEB', clientVersion: '2.20240101.00.00', hl: 'pt', gl: 'BR' }
+                    }
+                };
+                const res = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                const channelId = data?.endpoint?.browseEndpoint?.browseId;
+                if (channelId && channelId.startsWith('UC')) {
+                    console.log(`[M-Square] Channel ID via API interna YT: ${channelId}`);
+                    return { id: channelId, type: 'channel' };
+                }
+            } catch (e) {
+                console.warn("[M-Square] API interna do YouTube falhou:", e);
+            }
+
+            // ─── FASE 3: CDN Scraping da página do canal → Channel ID ────────────────
+            const channelPageUrl = `https://www.youtube.com/@${cleanHandle}`;
+            const channelId = await runScrapers(buildScrapers(channelPageUrl), extractChannelIdFromHtml);
+            if (channelId) return { id: channelId, type: 'channel' };
+
+            return null;
+        }
+
         function extractVideoInfo(url) {
             if (!url) return null;
+            url = url.trim();
+
+            // Normalização Sênior: atalho @canal -> URL completa /live
+            if (url.startsWith('@') && !url.includes('/')) {
+                url = `https://www.youtube.com/${url}/live`;
+            }
+
+            // Garante que URLs de handle tenham o sufixo /live
+            if (url.includes('youtube.com/@') && !url.includes('/live')) {
+                url = url.split('?')[0];
+                if (url.endsWith('/')) url = url.slice(0, -1);
+                url += '/live';
+            }
+
             if (url.includes('kick.com/')) {
                 const m = url.match(/kick\.com\/([a-zA-Z0-9_-]+)/);
                 return m ? { id: m[1], platform: 'kick' } : null;
             }
-            const ytId = url.match(/(?:v=|v\/|embed\/|live\/|shorts\/|youtu\.be\/|\/v\/|^)([a-zA-Z0-9_-]{11})/);
+
+            // Se contém @ ou /live, resolvemos como Handle para pegar o Channel ID
+            if (url.includes('@') || url.includes('/live')) {
+                const handleMatch = url.match(/@([a-zA-Z0-9_-]+)/);
+                if (handleMatch) return { id: handleMatch[1], platform: 'youtube-handle' };
+            }
+
+            // Youtube Channel ID Direto (UC...)
+            const channelIdMatch = url.match(/(?:youtube\.com\/(?:channel\/|c\/|user\/)?|^)(UC[a-zA-Z0-9_-]{22})/);
+            if (channelIdMatch) {
+                return { id: channelIdMatch[1], platform: 'youtube-live-auto' };
+            }
+
+            const ytId = url.match(/(?:v=|v\/|embed\/|live\/|shorts\/|youtu\.be\/|\/v\/|^|video:)([a-zA-Z0-9_-]{11})/);
             return ytId ? { id: ytId[1], platform: 'youtube' } : { id: url, platform: 'youtube' };
         }
 
         async function searchYouTube() {
             const query = document.getElementById('ytSearchInput').value.trim();
             const apiKey = localStorage.getItem('yt_api_key');
-            if (!query || !apiKey) return alert('Configure a API Key.');
+            if (!query || !apiKey) {
+                showCustomAlert('Atenção 🛑', 'Digite o termo desejado e configure a sua <b>API Key</b> do YouTube nas opções abaixo.');
+                return;
+            }
             const results = document.getElementById('searchResults');
             results.innerHTML = '<p>Pesquisando...</p>';
             try {
@@ -600,14 +960,42 @@
             } catch (e) { results.innerHTML = '<p>Erro na busca.</p>'; }
         }
 
+        let instantTimer = null;
         function handleInstantUrl(v) {
-            const info = extractVideoInfo(v);
-            if (info && (v.includes('.') || v.includes('/'))) selectVideo(info.id, info.platform);
+            clearTimeout(instantTimer);
+            instantTimer = setTimeout(() => {
+                const info = extractVideoInfo(v);
+                if (info && (v.includes('.') || v.includes('/'))) selectVideo(info.id, info.platform);
+            }, 500);
         }
 
-        function selectVideo(id, platform = 'youtube') {
+        async function selectVideo(id, platform = 'youtube') {
             const currentIds = getSavedIds();
-            currentIds.push({ id, platform });
+            let itemToAdd = { id, platform };
+
+            if (platform === 'youtube-handle') {
+                const sBtn = document.querySelector('.search-bar button');
+                const origIcon = sBtn ? sBtn.innerText : '';
+                if (sBtn) sBtn.innerText = '⏳';
+
+                const resolved = await resolveYouTubeLiveFromHandle(id);
+                if (sBtn) sBtn.innerText = origIcon;
+
+                if (resolved) {
+                    if (resolved.type === 'video') {
+                        // Video ID direto — mais robusto, funciona com múltiplas lives
+                        itemToAdd = { id: resolved.id, platform: 'youtube', displayHandle: `youtube.com/@${id}/live` };
+                    } else {
+                        // Channel ID — fallback para live_stream?channel=
+                        itemToAdd = { id: resolved.id, platform: 'youtube-live-auto', displayHandle: `youtube.com/@${id}/live` };
+                    }
+                } else {
+                    showCustomAlert('Atenção', 'Não conseguimos localizar o ID do canal para @' + id + '. Verifique o link ou se o canal existe.');
+                    return;
+                }
+            }
+
+            currentIds.push(itemToAdd);
             localStorage.setItem('msquare_streams', JSON.stringify(currentIds));
 
             // Limpa o campo imediatamente para a próxima interação
@@ -625,6 +1013,36 @@
             document.getElementById('keepLiveSync').checked = syncEnabled;
         }
         function closeModal() { document.getElementById('settingsModal').style.display = 'none'; }
+
+        // --- CUSTOM ALERTS & MODALS JS ENGINE ---
+        function showCustomAlert(title, text) {
+            document.getElementById('customAlertTitle').innerText = title;
+            document.getElementById('customAlertText').innerHTML = text;
+            document.getElementById('customAlertModal').style.display = 'flex';
+        }
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').style.display = 'none';
+        }
+
+        function showCustomConfirm(title, text, actionCallback) {
+            document.getElementById('customConfirmTitle').innerText = title;
+            document.getElementById('customConfirmText').innerHTML = text;
+            window._currentConfirmCallback = actionCallback;
+            document.getElementById('customConfirmModal').style.display = 'flex';
+        }
+        function closeCustomConfirm() {
+            document.getElementById('customConfirmModal').style.display = 'none';
+            window._currentConfirmCallback = null;
+        }
+        function executeCustomConfirm() {
+            if (typeof window._currentConfirmCallback === 'function') {
+                window._currentConfirmCallback();
+            }
+            closeCustomConfirm();
+        }
+
+        function openHelpModal() { document.getElementById('helpModal').style.display = 'flex'; }
+        function closeHelpModal() { document.getElementById('helpModal').style.display = 'none'; }
         function toggleApiSettings() { const p = document.getElementById('apiSettings'); p.style.display = p.style.display === 'none' ? 'flex' : 'none'; }
         function saveApiKey() { localStorage.setItem('yt_api_key', document.getElementById('ytApiKey').value); toggleApiSettings(); }
 

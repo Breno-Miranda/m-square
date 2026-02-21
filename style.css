@@ -926,3 +926,193 @@ body {
 .btn-floating-share {
     display: none;
 }
+
+/* SR-Only para Leitores de Tela e SEO */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Ad Placeholder Styles (Loading AdSense) */
+.ad-placeholder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, transparent 80%);
+    width: 100%;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.ad-placeholder span {
+    font-size: 0.8rem;
+    color: #555;
+    margin-top: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.ad-loading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255, 255, 255, 0.05);
+    border-top: 3px solid var(--accent-tertiary);
+    border-radius: 50%;
+    animation: spin-ad 1s linear infinite;
+}
+
+@keyframes spin-ad {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Help Modal Specifics */
+.help-modal-content {
+    max-width: 650px;
+}
+
+.help-modal-content .modal-header h3 {
+    color: var(--accent-tertiary);
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+}
+
+.help-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 500px) {
+    .help-body {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.help-feature {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    transition: all 0.3s;
+}
+
+.help-feature:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    border-color: var(--accent-tertiary);
+}
+
+.help-icon {
+    font-size: 1.8rem;
+    background: var(--surface);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: #aaa;
+    line-height: 1.4;
+}
+
+.help-text strong {
+    color: white;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Clear All Button */
+.btn-clear-all {
+    background: transparent;
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    color: #ff4444;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-clear-all:hover {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: #ff4444;
+}
+
+/* Custom Dialog / Alerts System */
+.custom-dialog-content {
+    max-width: 350px;
+    text-align: center;
+    padding: 30px;
+    background: #151515;
+    border: 1px solid var(--border-color);
+}
+
+.custom-dialog-content h3 {
+    font-size: 1.3rem;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.custom-dialog-content p {
+    font-size: 0.9rem;
+    color: #aaa;
+    line-height: 1.5;
+    margin-bottom: 25px;
+    word-break: break-word;
+}
+
+.dialog-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.15));
+    animation: scaleBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleBounce {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.btn-danger-action {
+    background: linear-gradient(45deg, #ff416c, #ff4b2b);
+    border: none;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+    transition: transform 0.2s;
+    font-size: 0.9rem;
+}
+
+.btn-danger-action:hover {
+    transform: scale(1.05);
+}
