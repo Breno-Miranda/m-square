@@ -1,0 +1,11 @@
+# M-Square — robots.txt
+# https://m-square.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://m-square.com/sitemap.xml
+
+# Crawl-delay (cortesia — não obrigatório)
+Crawl-delay: 1

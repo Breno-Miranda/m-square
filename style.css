@@ -299,16 +299,14 @@ body {
 }
 
 /* ============================================================
- * AD SLOT — SOLUÇÃO DEFINITIVA (formato fixo rectangle)
+ * AD SLOT — CENTRALIZAÇÃO + FLEXBOX
  *
- * Regra de ouro AdSense em grids/dashboards:
- *   → Usar data-ad-format="rectangle" (não "auto")
- *   → Container com altura FIXA correspondendo ao formato
- *   → overflow:hidden para conter o ad sem bleeding
- *   → <ins> com width:100%; height:100% preenchendo o container
- *
- * "auto" faz o AdSense ignorar o container e escolher o tamanho.
- * "rectangle" respeita as dimensões que definimos.
+ * Estratégia:
+ *   → Container flexbox centraliza qualquer tamanho de anúncio
+ *   → data-ad-format="auto" + data-full-width-responsive="true"
+ *     permite ao AdSense escolher o formato ideal
+ *   → overflow:hidden previne bleeding
+ *   → min-height garante espaço visual mesmo sem anúncio
  * ============================================================ */
 
 .ad-slot {
@@ -316,17 +314,20 @@ body {
     background: rgba(8, 8, 16, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.08);
     overflow: hidden;
-    /* contém o anúncio — sem bleeding */
     cursor: default;
-    /* Altura fixa = formato rectangle (300x250 / 336x280) */
-    /* O AdSense rectangle respeita isso — diferente do "auto" */
-    height: 280px;
+    /* Flexbox centraliza o anúncio independente do tamanho */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Permite que o ad cresça com o grid, com mínimo razoável */
+    min-height: 250px;
 }
 
-/* Mobile: mantém altura fixa, remove aspect-ratio herdado do .video-item */
+/* Mobile: mantém min-height, remove aspect-ratio herdado do .video-item */
 @media (max-width: 768px) {
     .ad-slot {
-        height: 280px !important;
+        min-height: 250px !important;
+        height: auto !important;
         aspect-ratio: unset !important;
     }
 }
@@ -357,15 +358,16 @@ body {
 }
 
 /*
- * A <ins> preenche 100% do container (280px de altura).
- * width:100% + height:100% — o AdSense rectangle respeita isso.
- * Sem wrappers extras, sem position:absolute, sem mágica.
+ * A <ins> centralizada pelo container pai (flexbox).
+ * O AdSense com format="auto" define o tamanho ideal.
+ * Não forçamos 100% para não distorcer — deixamos o AdSense decidir.
  */
 .ad-ins {
     display: block !important;
     width: 100% !important;
-    height: 100% !important;
+    min-height: 250px !important;
     position: relative !important;
+    text-align: center !important;
 }
 
 /* Spinner animado no placeholder */
@@ -846,49 +848,139 @@ body {
     color: #888;
 }
 
-/* API Settings Styles */
-.btn-api-config {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: #666;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.7rem;
-    transition: all 0.3s;
-}
-
-.btn-api-config:hover {
-    color: var(--accent-tertiary);
-    border-color: var(--accent-tertiary);
-}
-
-.api-settings-panel {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px dashed var(--border-color);
+/* Modal Loading Overlay — efeito de carregamento com logo M-Square */
+.modal-loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
     display: flex;
-    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    border-radius: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
 }
 
-.api-settings-panel input {
-    flex: 1;
-    background: #000;
+.modal-loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.modal-loading-logo {
+    width: 60px;
+    height: 60px;
+    animation: loadingPulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 15px rgba(252, 176, 69, 0.4));
+}
+
+@keyframes loadingPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+.modal-loading-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #aaa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: loadingTextFade 1.5s ease-in-out infinite;
+}
+
+@keyframes loadingTextFade {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Live Picker — Seleção de múltiplas lives */
+.live-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
-    color: white;
-    padding: 8px;
-    border-radius: 6px;
-    font-size: 0.8rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.api-settings-panel button {
-    background: #333;
-    border: none;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.8rem;
+.live-picker-item:hover {
+    background: rgba(131, 58, 180, 0.1);
+    border-color: var(--accent-primary);
+    transform: translateX(4px);
+}
+
+.live-picker-thumb {
+    width: 120px;
+    height: 68px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.live-picker-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.live-picker-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #eee;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.live-picker-id {
+    font-size: 0.65rem;
+    color: #666;
+    font-family: monospace;
+}
+
+.live-picker-badge {
+    flex-shrink: 0;
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #ff0000;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    animation: blink 2s infinite;
+    white-space: nowrap;
 }
 
 /* Sync Section Styles */
