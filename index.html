@@ -212,7 +212,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.11.05</div>
+    <div class="version-badge">V0.11.06</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -425,9 +425,10 @@
                     </div>`;
             }).join('');
 
-            // ─── INICIALIZA O ADSENSE ──────────────────────────────────────────
-            // Formato: rectangle (fixo) — não precisa medir clientWidth.
-            // O AdSense rectangle respeita width:100% height:100% do container.
+            // ─── INICIALIZA O ADSENSE + OBSERVER ───────────────────────────────────
+            // CSS !important não vence pois o AdSense aplica position:absolute,
+            // left:0, top:0 via JS após o CSS ser processado.
+            // Solução: MutationObserver + setProperty(..., 'important')
             if (nAds > 0) {
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
@@ -435,13 +436,109 @@
                             document.querySelectorAll('ins.adsbygoogle:not([data-ad-status])').forEach(() => {
                                 (window.adsbygoogle = window.adsbygoogle || []).push({});
                             });
-                            console.log('[M-Square] AdSense rectangle slot inicializado.');
+                            console.log('[M-Square] AdSense push efetuado.');
                         } catch (e) {
                             console.warn('[M-Square] Falha ao inicializar AdSense:', e);
                         }
+                        // Inicia o observer DEPOIS do push para capturar
+                        // o iframe que será injetado pelo AdSense
+                        watchAndFixAdFrame();
                     });
                 });
             }
+        }
+
+        // ─── ADSENSE IFRAME FIXER ──────────────────────────────────────────────
+        // O AdSense injeta via JS: position:absolute; left:0; top:0
+        // no iframe gerado. Isso quebra o layout do grid.
+        // CSS !important não resolve pois o setProperty do AdSense
+        // é executado após o CSS. Usamos MutationObserver + setProperty
+        // com flag 'important' para vencer qualquer inline style.
+
+        function watchAndFixAdFrame() {
+            const adContainers = document.querySelectorAll('.ad-ins');
+            if (!adContainers.length) return;
+
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach(({ addedNodes }) => {
+                    addedNodes.forEach(node => {
+                        if (node.nodeType !== 1) return;
+
+                        // Host div: div#aswift_N_host
+                        if (node.id && node.id.endsWith('_host')) {
+                            fixAdHostDiv(node);
+                        }
+
+                        // iframe direto (caso AdSense adicione sem host div)
+                        if (node.tagName === 'IFRAME' && node.id && node.id.startsWith('aswift_')) {
+                            fixAdIframeDelayed(node);
+                        }
+
+                        // Filhos do nó adicionado
+                        if (node.querySelectorAll) {
+                            node.querySelectorAll('[id$="_host"]').forEach(fixAdHostDiv);
+                            node.querySelectorAll('iframe[id^="aswift_"]').forEach(fixAdIframeDelayed);
+                        }
+                    });
+                });
+            });
+
+            adContainers.forEach(ins => {
+                observer.observe(ins, { childList: true, subtree: true });
+            });
+
+            // Tenta corrigir elementos que já existam
+            document.querySelectorAll('[id$="_host"]').forEach(fixAdHostDiv);
+            document.querySelectorAll('iframe[id^="aswift_"]').forEach(fixAdIframeDelayed);
+
+            console.log('[M-Square] AdSense observer ativo em', adContainers.length, 'slot(s)');
+        }
+
+        function fixAdHostDiv(host) {
+            // Duplo rAF: aguarda AdSense terminar de setar TODOS os estilos
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                host.style.setProperty('display', 'block', 'important');
+                host.style.setProperty('width', '100%', 'important');
+                host.style.setProperty('height', '100%', 'important');
+                host.style.setProperty('overflow', 'hidden', 'important');
+                host.style.setProperty('position', 'relative', 'important');
+
+                // Corrige o iframe já presente dentro do host div
+                const iframe = host.querySelector('iframe');
+                if (iframe) {
+                    fixAdIframeNow(iframe);
+                } else {
+                    // iframe será adicionado depois: observa
+                    const inner = new MutationObserver(() => {
+                        const f = host.querySelector('iframe');
+                        if (f) { fixAdIframeNow(f); inner.disconnect(); }
+                    });
+                    inner.observe(host, { childList: true });
+                }
+            }));
+        }
+
+        // Com delay (para captura via MutationObserver)
+        function fixAdIframeDelayed(iframe) {
+            requestAnimationFrame(() => requestAnimationFrame(() => fixAdIframeNow(iframe)));
+        }
+
+        // Força os estilos no iframe imediatamente (já dentro de rAF)
+        function fixAdIframeNow(iframe) {
+            // Propriedades que o AdSense injeta e que quebram o layout:
+            iframe.style.setProperty('position', 'relative', 'important'); // absolute → relative
+            iframe.style.setProperty('left', 'auto', 'important'); // 0 → auto
+            iframe.style.setProperty('top', 'auto', 'important'); // 0 → auto
+            // Dimensões fluídas
+            iframe.style.setProperty('width', '100%', 'important');
+            iframe.style.setProperty('height', '100%', 'important');
+            iframe.style.setProperty('min-height', '0', 'important');
+            iframe.style.setProperty('max-height', 'none', 'important');
+            iframe.style.setProperty('min-width', '0', 'important');
+            iframe.style.setProperty('max-width', '100%', 'important');
+
+            const r = iframe.getBoundingClientRect();
+            console.log(`[M-Square] ✅ iframe ${iframe.id} corrigido | pos:relative | ${Math.round(r.width)}x${Math.round(r.height)}px`);
         }
 
         function handleVideoClick(e, overlay, id, platform) {
