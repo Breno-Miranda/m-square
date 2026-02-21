@@ -505,7 +505,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.11.12</div>
+    <div class="version-badge">V0.11.13</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -817,94 +817,12 @@
         // é executado após o CSS. Usamos MutationObserver + setProperty
         // com flag 'important' para vencer qualquer inline style.
 
+        // ─── ADSENSE CONTAINMENT ─────────────────────────────────────────────
+        // A contenção é feita 100% via CSS (overflow:hidden + clip-path:inset(0)).
+        // NÃO sobrescrevemos estilos internos do AdSense — isso causa guerra de
+        // estilos que o AdSense vence. O CSS garante que nada vaze visualmente.
         function watchAndFixAdFrame() {
-            const adContainers = document.querySelectorAll('.ad-ins');
-            if (!adContainers.length) return;
-
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach(({ addedNodes }) => {
-                    addedNodes.forEach(node => {
-                        if (node.nodeType !== 1) return;
-
-                        // Host div: div#aswift_N_host
-                        if (node.id && node.id.endsWith('_host')) {
-                            fixAdHostDiv(node);
-                        }
-
-                        // iframe direto (caso AdSense adicione sem host div)
-                        if (node.tagName === 'IFRAME' && node.id && node.id.startsWith('aswift_')) {
-                            fixAdIframeDelayed(node);
-                        }
-
-                        // Filhos do nó adicionado
-                        if (node.querySelectorAll) {
-                            node.querySelectorAll('[id$="_host"]').forEach(fixAdHostDiv);
-                            node.querySelectorAll('iframe[id^="aswift_"]').forEach(fixAdIframeDelayed);
-                        }
-                    });
-                });
-            });
-
-            adContainers.forEach(ins => {
-                observer.observe(ins, { childList: true, subtree: true });
-            });
-
-            // Tenta corrigir elementos que já existam
-            document.querySelectorAll('[id$="_host"]').forEach(fixAdHostDiv);
-            document.querySelectorAll('iframe[id^="aswift_"]').forEach(fixAdIframeDelayed);
-
-            console.log('[M-Square] AdSense observer ativo em', adContainers.length, 'slot(s)');
-        }
-
-        function fixAdHostDiv(host) {
-            applyHostFix(host);
-            // Re-aplica em intervalos crescentes — o AdSense re-seta estilos
-            // via JS em momentos imprevisíveis após o carregamento
-            [200, 500, 1000, 2000, 4000].forEach(ms => {
-                setTimeout(() => applyHostFix(host), ms);
-            });
-        }
-
-        function applyHostFix(host) {
-            host.style.setProperty('position', 'relative', 'important');
-            host.style.setProperty('left', 'auto', 'important');
-            host.style.setProperty('top', 'auto', 'important');
-            host.style.setProperty('display', 'flex', 'important');
-            host.style.setProperty('justify-content', 'center', 'important');
-            host.style.setProperty('align-items', 'center', 'important');
-            host.style.setProperty('width', '100%', 'important');
-            host.style.setProperty('height', '100%', 'important');
-            host.style.setProperty('max-width', '100%', 'important');
-            host.style.setProperty('max-height', '100%', 'important');
-            host.style.setProperty('overflow', 'hidden', 'important');
-
-            // Corrige iframes dentro do host
-            host.querySelectorAll('iframe').forEach(fixAdIframeNow);
-        }
-
-        // Com delay (para captura via MutationObserver)
-        function fixAdIframeDelayed(iframe) {
-            requestAnimationFrame(() => requestAnimationFrame(() => fixAdIframeNow(iframe)));
-            // Re-aplica para combater AdSense
-            [300, 800, 1500, 3000].forEach(ms => {
-                setTimeout(() => fixAdIframeNow(iframe), ms);
-            });
-        }
-
-        // Força contenção do iframe — combate position:absolute do AdSense
-        function fixAdIframeNow(iframe) {
-            iframe.style.setProperty('position', 'relative', 'important');
-            iframe.style.setProperty('left', 'auto', 'important');
-            iframe.style.setProperty('top', 'auto', 'important');
-            iframe.style.setProperty('max-width', '100%', 'important');
-            iframe.style.setProperty('max-height', '100%', 'important');
-            iframe.style.setProperty('margin', 'auto', 'important');
-            iframe.style.setProperty('display', 'block', 'important');
-
-            const r = iframe.getBoundingClientRect();
-            if (r.width > 0) {
-                console.log(`[M-Square] ✅ iframe ${iframe.id} contido | ${Math.round(r.width)}x${Math.round(r.height)}px`);
-            }
+            console.log('[M-Square] AdSense containment via CSS — nenhuma intervenção JS necessária.');
         }
 
         function handleVideoClick(e, overlay, id, platform) {

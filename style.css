@@ -311,17 +311,18 @@ body {
  * ============================================================ */
 
 .ad-slot {
-    position: relative !important;
+    position: relative;
     background: rgba(8, 8, 16, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.08);
     cursor: default;
-    /* Contenção rígida — impede qualquer overflow do AdSense */
-    overflow: hidden !important;
-    contain: layout style;
-    /* Centralização: o container é o boss */
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
+    /*
+     * CONTENÇÃO VISUAL — abordagem definitiva.
+     * Não tentamos sobrescrever estilos internos do AdSense.
+     * overflow:hidden + clip-path garantem que NADA vaze visualmente,
+     * independente do que o AdSense faça internamente.
+     */
+    overflow: hidden;
+    clip-path: inset(0);
     min-height: 250px;
 }
 
@@ -360,49 +361,16 @@ body {
 }
 
 /*
- * A <ins> ocupa 100% do container.
- * O AdSense com format="auto" define o tamanho ideal.
+ * A <ins> preenche 100% do slot via posicionamento absoluto.
+ * Isso dá ao AdSense um container de referência com dimensões reais.
  */
 .ad-ins {
+    position: absolute !important;
+    inset: 0 !important;
     display: block !important;
     width: 100% !important;
     height: 100% !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
-    position: relative !important;
-    text-align: center !important;
-    overflow: hidden !important;
-}
-
-/*
- * === FORÇAR CONTENÇÃO DO ADSENSE ===
- * O AdSense injeta divs e iframes com position:absolute + left:0 + top:0
- * que IGNORAM o flexbox do container. Estas regras com alta especificidade
- * + !important forçam a contenção.
- */
-.ad-slot ins>div,
-.ad-slot [id$="_host"] {
-    position: relative !important;
-    left: auto !important;
-    top: auto !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-}
-
-.ad-slot iframe {
-    position: relative !important;
-    left: auto !important;
-    top: auto !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
-    margin: auto !important;
-    display: block !important;
+    z-index: 1;
 }
 
 /* Spinner animado no placeholder */
