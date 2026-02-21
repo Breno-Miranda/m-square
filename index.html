@@ -212,7 +212,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.11.01</div>
+    <div class="version-badge">V0.11.02</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -427,26 +427,43 @@
                     </div>`;
             }).join('');
 
-            // Inicializa os anúncios injetados de forma assíncrona
-            // ESTRATÉGIA DEFINITIVA:
-            // 1. Aguarda o DOM ter dimensoes reais (reflow após render)
-            // 2. Chama push({}) individualmente por <ins> não inicializada
-            // 3. Usa requestAnimationFrame para garantir que o grid já foi pintado
+            // ─── INICIALIZAÇÃO DO ADSENSE ─────────────────────────────────────
+            // ESTRATÉGIA: Ler o clientWidth real do wrapper DEPOIS do layout do grid
+            // e injetar via style inline na <ins> antes do push({}).
+            // Isso é necessário porque o AdSense com data-full-width-responsive
+            // mede o offsetWidth do elemento pai no momento do push(), e quando
+            // a <ins> está dentro de um grid dinâmico, esse valor pode ser 0 ou
+            // incorreto sem a injeção explícita de dimensões em pixels.
             if (nAds > 0) {
                 const initAds = () => {
                     try {
-                        // Seleciona apenas <ins> que ainda NÃO foram processadas pelo AdSense
                         const uninitializedIns = document.querySelectorAll('ins.adsbygoogle:not([data-ad-status])');
+
                         uninitializedIns.forEach(ins => {
+                            // Lê a largura real do wrapper (container absoluto que preenche a célula do grid)
+                            const wrapper = ins.closest('.ad-ins-wrapper');
+                            const slot = ins.closest('.ad-slot');
+
+                            // Usa o clientWidth do wrapper, ou do slot como fallback
+                            const availableWidth = (wrapper && wrapper.clientWidth > 0)
+                                ? wrapper.clientWidth
+                                : (slot && slot.clientWidth > 0 ? slot.clientWidth : 300);
+
+                            // Injeta dimensões explícitas em px — o AdSense usa isso para escolher o formato
+                            ins.style.display = 'block';
+                            ins.style.width = availableWidth + 'px';
+                            ins.style.height = 'auto';
+
+                            console.log(`[M-Square] AdSense push: largura disponível = ${availableWidth}px`);
                             (window.adsbygoogle = window.adsbygoogle || []).push({});
                         });
-                        console.log(`[M-Square] AdSense: ${uninitializedIns.length} slot(s) inicializado(s).`);
                     } catch (e) {
-                        console.warn("[M-Square] Falha ao injetar anúncio:", e);
+                        console.warn('[M-Square] Falha ao injetar anúncio:', e);
                     }
                 };
 
-                // Aguarda 2 frames para garantir que o grid já foi calculado pelo browser
+                // Double rAF: garante que o browser finalizou o layout do grid CSS
+                // antes de medir clientWidth. Um único rAF pode ser cedo demais.
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         initAds();
