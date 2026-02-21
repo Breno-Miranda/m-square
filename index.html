@@ -212,7 +212,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.11.00</div>
+    <div class="version-badge">V0.11.01</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -367,16 +367,19 @@
 
                 if (item.type === 'ad') {
                     return `
-                        <div class="video-item ad-slot ${bClass}">
+                        <div class="video-item ad-slot ${bClass}" data-ad-index="${index}">
                             <div class="ad-placeholder" id="ad-placeholder-${index}">
                                 <div class="ad-loading-spinner"></div>
                                 <span>Publicidade</span>
                             </div>
-                            <ins class="adsbygoogle ad-ins"
-                                 data-ad-client="ca-pub-7844284078845131"
-                                 data-ad-slot="6848758884"
-                                 data-ad-format="auto"
-                                 data-full-width-responsive="true"></ins>
+                            <div class="ad-ins-wrapper">
+                                <ins class="adsbygoogle ad-ins"
+                                     style="display:block"
+                                     data-ad-client="ca-pub-7844284078845131"
+                                     data-ad-slot="6848758884"
+                                     data-ad-format="auto"
+                                     data-full-width-responsive="true"></ins>
+                            </div>
                         </div>`;
                 }
 
@@ -424,18 +427,31 @@
                     </div>`;
             }).join('');
 
-            // Inicializa os anúncios injetados de forma assíncrona para garantir o DOM
+            // Inicializa os anúncios injetados de forma assíncrona
+            // ESTRATÉGIA DEFINITIVA:
+            // 1. Aguarda o DOM ter dimensoes reais (reflow após render)
+            // 2. Chama push({}) individualmente por <ins> não inicializada
+            // 3. Usa requestAnimationFrame para garantir que o grid já foi pintado
             if (nAds > 0) {
-                setTimeout(() => {
+                const initAds = () => {
                     try {
-                        const adInSlots = document.querySelectorAll('.ad-slot:not([data-ad-status])');
-                        adInSlots.forEach(() => {
+                        // Seleciona apenas <ins> que ainda NÃO foram processadas pelo AdSense
+                        const uninitializedIns = document.querySelectorAll('ins.adsbygoogle:not([data-ad-status])');
+                        uninitializedIns.forEach(ins => {
                             (window.adsbygoogle = window.adsbygoogle || []).push({});
                         });
+                        console.log(`[M-Square] AdSense: ${uninitializedIns.length} slot(s) inicializado(s).`);
                     } catch (e) {
                         console.warn("[M-Square] Falha ao injetar anúncio:", e);
                     }
-                }, 500);
+                };
+
+                // Aguarda 2 frames para garantir que o grid já foi calculado pelo browser
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        initAds();
+                    });
+                });
             }
         }
 

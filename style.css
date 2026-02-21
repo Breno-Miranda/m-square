@@ -299,11 +299,36 @@ body {
 }
 
 /* Ad Slot Styles */
+/* 
+ * SOLUÇÃO DEFINITIVA: O AdSense com data-full-width-responsive="true" precisa
+ * que a <ins> seja um elemento de FLUXO NORMAL (não position:absolute).
+ * O AdSense mede a largura do elemento pai no instante do push({}),
+ * e só consegue fazer isso corretamente com um container de largura definida
+ * e a <ins> em display:block normal.
+ */
 .ad-slot {
     position: relative;
-    overflow: hidden;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Não usar overflow:hidden — impede o AdSense de expandir o <ins> */
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    /* min-height garante espaço mesmo antes do anúncio carregar */
+    min-height: 250px;
+    /* Sobrescreve o height:100% do .video-item — o AdSense precisa de altura auto */
+    height: auto;
+}
+
+/* Mobile: slot mais alto para formatos verticais */
+@media (max-width: 768px) {
+    .ad-slot {
+        min-height: 280px;
+        aspect-ratio: unset !important;
+        height: auto !important;
+    }
 }
 
 /* Placeholder visível enquanto o AdSense ainda não carregou */
@@ -319,25 +344,64 @@ body {
     font-size: 0.7rem;
     letter-spacing: 1px;
     text-transform: uppercase;
-    z-index: 1;
+    z-index: 0;
     pointer-events: none;
     transition: opacity 0.5s ease;
 }
 
-/* ins ocupa TODO o slot — o AdSense injeta o iframe dentro dele */
+/*
+ * A <ins> deve ser display:block em fluxo normal.
+ * NÃO usar position:absolute aqui — o AdSense precisa medir a largura do pai.
+ * width:100% garante que o responsive funcione.
+ * min-height impede colapso antes do carregamento.
+ */
 .ad-ins {
     display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    position: relative !important;
     width: 100% !important;
-    height: 100% !important;
-    z-index: 2;
+    height: auto !important;
+    min-height: 250px !important;
+    z-index: 1;
+    /* Override de qualquer estilo inline que o AdSense possa aplicar */
+    max-width: 100% !important;
 }
 
 /* Quando AdSense carrega e atribui data-ad-status, esconde o placeholder */
-.ad-slot:has(.ad-ins[data-ad-status="filled"]) .ad-placeholder {
+.ad-slot:has(.ad-ins[data-ad-status="filled"]) .ad-placeholder,
+.ad-slot:has(.ad-ins[data-ad-status="unfilled"]) .ad-placeholder {
     opacity: 0;
+}
+
+/*
+ * Wrapper que dá ao AdSense um contexto de largura estável e bem definida.
+ * É este elemento que o AdSense usa para calcular a largura disponível
+ * no modo data-full-width-responsive.
+ */
+.ad-ins-wrapper {
+    width: 100%;
+    height: auto;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
+}
+
+/* Spinner animado no placeholder */
+.ad-loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    animation: adSpinnerRotate 1s linear infinite;
+}
+
+@keyframes adSpinnerRotate {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 
