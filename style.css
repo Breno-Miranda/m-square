@@ -299,16 +299,20 @@ body {
 }
 
 /* ============================================================
- * AD SLOT — SOLUÇÃO DEFINITIVA
+ * AD SLOT — SOLUÇÃO DEFINITIVA v3
  *
- * Filosofia:
- * - .ad-slot É uma célula normal do grid (participa do layout
- *   como qualquer .video-item, mantendo height:100%)
- * - .ad-ins-wrapper usa position:absolute para preencher a
- *   célula inteira, MAS a <ins> fica em fluxo normal DENTRO
- *   dele — é assim que o AdSense consegue medir a largura real.
- * - JS injeta o width em px explicitamente antes do push({})
- *   para garantir que data-full-width-responsive funcione.
+ * O AdSense gera: div#aswift_host { display:inline-block; overflow:visible }
+ *                   └─ iframe { position:absolute; left:0; top:0 }
+ *
+ * Problema: overflow:visible no host + position:absolute no iframe
+ * → BLEEDING: o iframe vaza para fora da célula cobrindo vídeos
+ *
+ * Solução:
+ *   1. .ad-slot: position:relative + overflow:hidden (barreira externa)
+ *   2. .ad-ins-wrapper: position:absolute inset:0 + overflow:hidden
+ *      → Esta é a barreira REAL que corta o bleeding do iframe
+ *      + display:flex + center → centraliza o inline-block do AdSense
+ *   3. <ins> em position:static (fluxo puro) → AdSense mede clientWidth
  * ============================================================ */
 
 .ad-slot {
@@ -356,36 +360,42 @@ body {
 }
 
 /*
- * Wrapper absoluto que preenche a célula do grid.
- * A <ins> fica em fluxo NORMAL dentro deste wrapper.
- * JS lê o clientWidth deste elemento e seta na <ins>.
+ * WRAPPER CRÍTICO:
+ * - position:absolute + inset:0 → preenche toda a célula do grid
+ * - overflow:hidden → ANTI-BLEEDING: corta o iframe do AdSense
+ *   (o AdSense gera iframe position:absolute dentro de um host
+ *   display:inline-block + overflow:visible — sem overflow:hidden
+ *   aqui, o iframe vaza para fora da célula)
+ * - display:flex + align-items/justify-content:center → centraliza
+ *   o inline-block gerado pelo AdSense dentro da célula
  */
 .ad-ins-wrapper {
     position: absolute;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: stretch;
-    z-index: 1;
-    /* overflow:hidden aqui para não vazar da célula */
     overflow: hidden;
+    /* ← CORTA O BLEEDING DO IFRAME ADSENSE */
+    display: flex;
+    align-items: center;
+    /* centraliza verticalmente */
+    justify-content: center;
+    /* centraliza horizontalmente */
+    z-index: 1;
 }
 
 /*
- * A <ins> em fluxo normal dentro do wrapper absoluto.
- * NÃO usar position:absolute na <ins> — o AdSense precisa
- * de um elemento de bloco com largura calculável.
- * O JS seta width em px via style inline antes do push({}).
+ * A <ins> em POSITION:STATIC (fluxo puro) dentro do wrapper.
+ * - static: AdSense mede o clientWidth do elemento corretamente
+ * - block:  necessário para o AdSense reconhecer o slot
+ * - width em px é injetado pelo JS antes do push({})
+ * - flex-shrink:0 evita que o flex container comprima o anúncio
  */
 .ad-ins {
     display: block !important;
-    /* position será relative (fluxo normal) */
-    position: relative !important;
-    /* width em px é injetado via JS — não usar 100% aqui */
+    position: static !important;
+    /* Fluxo puro — AdSense mede corretamente */
     height: auto !important;
-    z-index: 1;
-    margin: auto;
+    flex-shrink: 0;
+    /* Não deixa o flex comprimir o anúncio */
 }
 
 /* Spinner animado no placeholder */
