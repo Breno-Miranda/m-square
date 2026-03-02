@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3QK6CR1BXY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-3QK6CR1BXY');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-Square Cinema — Assista Juntos (Watch Party)</title>
+    <meta name="description"
+        content="Experiência de cinema imersiva no M-Square. Compartilhe a sala, assista a filmes completos, transmissões e compilações junto com seus amigos em tela cheia.">
+
+    <!-- SEO & Indexação -->
+    <meta name="author" content="M-Square">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://m-square.com/cinema/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="M-Square">
+    <meta property="og:title" content="M-Square Cinema — Watch Party">
+    <meta property="og:description"
+        content="Experiência imersiva em tela cheia. Assista a vídeos e junte-se aos amigos no M-Square.">
+    <meta property="og:url" content="https://m-square.com/cinema/">
+    <meta property="og:image" content="https://m-square.com/og-image.png">
+
+    <!-- Ícones e Temas -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%2233%22 height=%22100%22 fill=%22%232980b9%22 rx=%226%22/><rect x=%2233.5%22 width=%2233%22 height=%22100%22 fill=%22%2327ae60%22 rx=%226%22/><rect x=%2267%22 width=%2233%22 height=%22100%22 fill=%22%23f39c12%22 rx=%226%22/></svg>">
+    <meta name="theme-color" content="#000000">
+
+    <!-- Fontes e CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="cinema.css">
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7844284078845131"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <div class="cinema-layout">
+
+        <!-- ÁREA DO VÍDEO (IMERSIVA) -->
+        <main class="video-container" role="main">
+            <div class="video-wrapper">
+                <!-- Trailer exemplar longo / Filme para testar fullscreen -->
+                <iframe id="cinema-player" src="https://www.youtube.com/embed/S_8qKhlQemY?autoplay=1"
+                    title="M-Square Cinema Player"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen loading="lazy">
+                </iframe>
+            </div>
+        </main>
+
+        <!-- SIDEBAR (AÇÕES E MONETIZAÇÃO) -->
+        <aside class="cinema-sidebar">
+            <header class="sidebar-header">
+                <a href="/" class="brand" title="M-Square Home">
+                    <svg viewBox="0 0 100 100">
+                        <rect width="33" height="100" fill="#2980b9" rx="6" />
+                        <rect x="33.5" width="33" height="100" fill="#27ae60" rx="6" />
+                        <rect x="67" width="33" height="100" fill="#f39c12" rx="6" />
+                    </svg>
+                    <span class="brand-text">CINEMA</span>
+                </a>
+                <a href="/" class="nav-back">Sair</a>
+            </header>
+
+            <div class="sidebar-content">
+
+                <!-- Painel de Seleção de Vídeo -->
+                <div class="video-input-panel">
+                    <h2 class="panel-title">📺 Escolher Vídeo</h2>
+                    <div class="input-group">
+                        <input type="text" id="cinema-video-input" placeholder="Cole o link do YouTube..."
+                            aria-label="Link do YouTube">
+                        <button id="btn-load-video" aria-label="Carregar vídeo">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="input-hint">Ex: youtube.com/watch?v=... ou ID</p>
+                </div>
+
+                <!-- Painel de Compartilhamento / Watch Party Mock -->
+                <div class="watch-party-panel">
+                    <h2 class="panel-title">👥 Assistir com Amigos</h2>
+                    <p style="font-size: 0.75rem; color: #888; margin-bottom: 15px;">
+                        Compartilhe o link da sala. Vocês assistirão em sincronia na próxima versão.
+                    </p>
+                    <button class="btn-share" id="btn-share-room" aria-label="Copiar link da sala">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                            <polyline points="16 6 12 2 8 6"></polyline>
+                            <line x1="12" y1="2" x2="12" y2="15"></line>
+                        </svg>
+                        Copiar Link da Sala
+                    </button>
+                    <div class="share-status" id="share-status">Link copiado para a área de transferência!</div>
+                </div>
+
+                <!-- ESPAÇO DEDICADO PARA ADSENSE -->
+                <div class="ad-container" aria-label="Espaço Publicitário">
+                    <span class="ad-label">Publicidade</span>
+                    <!-- Anúncio Responsivo AdSense -->
+                    <ins class="adsbygoogle" style="display:block; width:100%; height:100%;"
+                        data-ad-client="ca-pub-7844284078845131" data-ad-slot="1234567890" data-ad-format="auto"
+                        data-full-width-responsive="true"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Script de lógica de UI da página de cinema -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnShare = document.getElementById('btn-share-room');
+            const shareStatus = document.getElementById('share-status');
+            const videoInput = document.getElementById('cinema-video-input');
+            const btnLoadVideo = document.getElementById('btn-load-video');
+            const cinemaPlayer = document.getElementById('cinema-player');
+
+            // --- 1. Inicialização (Ler da URL) ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialVideoId = urlParams.get('v');
+            if (initialVideoId) {
+                cinemaPlayer.src = `https://www.youtube.com/embed/${initialVideoId}?autoplay=1`;
+            }
+
+            // --- 2. Lógica de Carregamento de Vídeo ---
+            function extractYouTubeID(url) {
+                const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[7].length === 11) ? match[7] : url;
+            }
+
+            function loadVideo(inputValue) {
+                const rawValue = inputValue.trim();
+                if (!rawValue || rawValue.length < 5) return;
+
+                const finalId = extractYouTubeID(rawValue);
+
+                cinemaPlayer.src = `https://www.youtube.com/embed/${finalId}?autoplay=1`;
+
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('v', finalId);
+                window.history.pushState({ path: newUrl.href }, '', newUrl.href);
+
+                videoInput.value = '';
+                videoInput.blur();
+            }
+
+            btnLoadVideo.addEventListener('click', () => {
+                loadVideo(videoInput.value);
+            });
+
+            videoInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    loadVideo(videoInput.value);
+                }
+            });
+
+            // --- 3. Telemetria e Compartilhamento ---
+            if (typeof gtag === 'function') {
+                gtag('event', 'page_view', {
+                    'page_title': 'Cinema Mode',
+                    'page_path': window.location.pathname + window.location.search
+                });
+            }
+
+            btnShare.addEventListener('click', () => {
+                const roomUrl = window.location.href;
+
+                navigator.clipboard.writeText(roomUrl).then(() => {
+                    shareStatus.style.opacity = '1';
+
+                    setTimeout(() => {
+                        shareStatus.style.opacity = '0';
+                    }, 3000);
+
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'share', {
+                            'method': 'Copy Link',
+                            'content_type': 'cinema_room',
+                            'item_id': roomUrl
+                        });
+                    }
+                }).catch(err => {
+                    console.error('Falha ao copiar link: ', err);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

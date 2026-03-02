@@ -1434,3 +1434,85 @@ body {
 .btn-danger-action:hover {
     transform: scale(1.05);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ANIMATIONS & EFFECTS
+   ═══════════════════════════════════════════════════════════════════ */
+
+.floating-feature-link {
+    animation: gentleFloat 3s ease-in-out infinite;
+    box-shadow: 0 4px 15px rgba(225, 29, 29, 0.2);
+}
+
+.floating-feature-link:hover {
+    animation-play-state: paused;
+    box-shadow: 0 6px 20px rgba(225, 29, 29, 0.4);
+    transform: translateY(-2px);
+}
+
+@keyframes gentleFloat {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SEO KEYWORDS FOOTER — Internal linking para busca orgânica
+   ═══════════════════════════════════════════════════════════════════ */
+
+.seo-keywords-footer {
+    position: relative;
+    width: 100%;
+    padding: 30px 20px 20px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.seo-keywords-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.seo-keywords-title {
+    font-size: 0.6rem;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.seo-keywords-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+}
+
+.seo-keywords-cloud a {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: #444;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    letter-spacing: 0.3px;
+}
+
+.seo-keywords-cloud a:hover {
+    color: #aaa;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+}

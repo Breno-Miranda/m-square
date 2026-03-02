@@ -1,0 +1,309 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CINEMA PAGE — CUSTOM STYLES
+   Focado em imersão audiovisual e Watch Party
+   ═══════════════════════════════════════════════════════════════════ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+:root {
+    --bg-pure-black: #000000;
+    --sidebar-bg: #0a0a0a;
+    --accent-primary: #833ab4;
+    --accent-secondary: #fd1d1d;
+    --accent-tertiary: #fcb045;
+    --text-main: #ffffff;
+    --text-muted: #888;
+    --border-color: rgba(255, 255, 255, 0.08);
+}
+
+html,
+body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    /* Mantém a tela travada como um app nato / cinema */
+    background-color: var(--bg-pure-black);
+    color: var(--text-main);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYOUT PRINCIPAL
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cinema-layout {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+.video-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-pure-black);
+    position: relative;
+    padding: 20px;
+}
+
+.video-wrapper {
+    width: 100%;
+    max-width: 1600px;
+    /* Limite para ultrawide */
+    aspect-ratio: 16 / 9;
+    background: #111;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+}
+
+.video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SIDEBAR (Ações e Ads)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cinema-sidebar {
+    width: 320px;
+    background-color: var(--sidebar-bg);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-main);
+}
+
+.brand svg {
+    width: 20px;
+    height: 20px;
+}
+
+.brand-text {
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    background: linear-gradient(45deg, #fff, var(--accent-tertiary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-back {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+}
+
+.nav-back:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Video Input Panel */
+.video-input-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+    flex-shrink: 0;
+}
+
+.input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+    border-color: var(--accent-secondary);
+}
+
+.input-group button {
+    background: var(--accent-secondary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 40px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-group button:hover {
+    background: #e01717;
+}
+
+.input-hint {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Watch Party Panel */
+.watch-party-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.panel-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-share {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-share:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(253, 29, 29, 0.3);
+}
+
+.share-status {
+    font-size: 0.75rem;
+    color: #4ade80;
+    text-align: center;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+/* Ad Container */
+.ad-container {
+    margin-top: auto;
+    width: 100%;
+    min-height: 250px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.ad-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVO / MOBILE
+   ═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+    .cinema-layout {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .video-container {
+        flex: none;
+        height: 40vh;
+        /* Fica no topo no mobile */
+        padding: 0;
+    }
+
+    .video-wrapper {
+        border-radius: 0;
+    }
+
+    .cinema-sidebar {
+        width: 100%;
+        flex: 1;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* Otimizar AdSense em telas pequenas */
+    .ad-container {
+        min-height: 100px;
+    }
+}

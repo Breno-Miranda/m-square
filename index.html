@@ -119,7 +119,7 @@
                     "Responsivo para desktop e mobile"
                 ],
                 "screenshot": "https://m-square.com/og-image.png",
-                "softwareVersion": "0.11.09",
+                "softwareVersion": "0.11.18",
                 "inLanguage": "pt-BR",
                 "isAccessibleForFree": true,
                 "creator": {
@@ -186,13 +186,21 @@
 
 <body>
 
-    <div class="floating-logo" style="display: flex; align-items: center; gap: 8px;">
-        <svg viewBox="0 0 100 100" style="width: 24px; height: 24px;">
-            <rect width="33" height="100" fill="#2980b9" rx="6" />
-            <rect x="33.5" width="33" height="100" fill="#27ae60" rx="6" />
-            <rect x="67" width="33" height="100" fill="#f39c12" rx="6" />
-        </svg>
-        <span class="logo-text"></span>
+    <div class="header-container"
+        style="position: absolute; top: 20px; left: 20px; z-index: 100; display: flex; align-items: center; gap: 20px;">
+        <div class="floating-logo" style="display: flex; align-items: center; gap: 8px; position: static;">
+            <svg viewBox="0 0 100 100" style="width: 24px; height: 24px;">
+                <rect width="33" height="100" fill="#2980b9" rx="6" />
+                <rect x="33.5" width="33" height="100" fill="#27ae60" rx="6" />
+                <rect x="67" width="33" height="100" fill="#f39c12" rx="6" />
+            </svg>
+            <span class="logo-text"></span>
+        </div>
+        <a href="/cinema/" class="new-feature-link floating-feature-link" aria-label="Acessar modo Cinema"
+            style="display: flex; align-items: center; gap: 6px; color: #fff; text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s; backdrop-filter: blur(5px);">
+            <span>🍿</span> Cinema <span
+                style="font-size: 0.6rem; background: #E11D1D; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; font-weight: 800;">Novo</span>
+        </a>
     </div>
 
     <main class="grid-main" role="main">
@@ -275,6 +283,11 @@
                 <span>🔗</span>
                 <span class="fab-label">Compartilhar</span>
             </button>
+            <a href="/cinema/" class="fab-item" title="Modo Cinema" aria-label="Entrar no modo Cinema"
+                style="text-decoration: none; display: flex; align-items: center; justify-content: center; color: inherit;">
+                <span>🍿</span>
+                <span class="fab-label">Cinema</span>
+            </a>
             <button class="fab-item" onclick="openModal(); toggleFabMenu();" title="Configurar Canais"
                 aria-label="Abrir configurações de streams">
                 <span>🛠️</span>
@@ -505,7 +518,7 @@
         </div>
     </div>
 
-    <div class="version-badge">V0.11.17</div>
+    <div class="version-badge">V0.11.19</div>
 
     <div class="supported-platforms">
         <span class="platform-label">Suportado:</span>
@@ -525,6 +538,36 @@
         </div>
     </div>
 
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SEO — Palavras-chave com links internos para indexação orgânica
+         ═══════════════════════════════════════════════════════════════════ -->
+    <footer class="seo-keywords-footer" aria-label="Conteúdos relacionados">
+        <div class="seo-keywords-container">
+            <p class="seo-keywords-title">Explore também no M-Square</p>
+            <div class="seo-keywords-cloud">
+                <a href="/flamengo/" title="Flamengo — Jogos Históricos e Gols">Flamengo Jogos Históricos</a>
+                <a href="/flamengo/#adriano-imperador" title="Adriano Imperador — Gols pelo Flamengo">Adriano Imperador
+                    Flamengo</a>
+                <a href="/flamengo/" title="Gols do Flamengo na Libertadores 2019">Flamengo Libertadores 2019</a>
+                <a href="/flamengo/#adriano-imperador" title="Todos os gols de Adriano Imperador">Adriano Imperador
+                    Gols</a>
+                <a href="/flamengo/" title="Flamengo 2x1 River Plate Final">Flamengo 2x1 River Plate</a>
+                <a href="/flamengo/" title="Flamengo 5x0 Grêmio Libertadores">Flamengo 5x0 Grêmio</a>
+                <a href="/flamengo/" title="Zico Gols pelo Flamengo">Zico Flamengo Gols</a>
+                <a href="/flamengo/" title="Melhores momentos do Flamengo">Melhores Momentos Flamengo</a>
+                <a href="/flamengo/#adriano-imperador" title="Adriano Imperador dribles e skills">Adriano Dribles e
+                    Skills</a>
+                <a href="/flamengo/" title="Gabigol Flamengo gols">Gabigol Flamengo</a>
+                <a href="/flamengo/" title="Assistir jogos antigos do Flamengo">Jogos Antigos Flamengo</a>
+                <a href="/flamengo/" title="Gols clássicos do Mengão">Gols Clássicos Mengão</a>
+                <a href="/flamengo/" title="Flamengo Maracanã gols históricos">Flamengo Maracanã</a>
+                <a href="/flamengo/#adriano-imperador" title="Adriano Imperador Brasileiro 2009">Adriano Brasileiro
+                    2009</a>
+                <a href="/flamengo/" title="Flamengo vídeos YouTube">Flamengo Vídeos</a>
+            </div>
+        </div>
+    </footer>
 
     <script>
         let players = {};
