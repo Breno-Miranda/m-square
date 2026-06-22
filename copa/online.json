@@ -1,0 +1,14 @@
+{
+  "title": "Copao",
+  "videoUrl": "https://www.youtube.com/watch?v=nLFPUeA-Naw",
+  "refreshSeconds": 30,
+  "links": [
+    {
+      "title": "Copao - YouTube",
+      "type": "youtube",
+      "url": "https://www.youtube.com/watch?v=nLFPUeA-Naw"
+    }
+  ],
+  "updatedAt": "2026-06-22"
+}
+

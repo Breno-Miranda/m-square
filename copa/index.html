@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3QK6CR1BXY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-3QK6CR1BXY');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copão — Links e Vídeos | M-Square</title>
+    <meta name="description"
+        content="Página Copão no M-Square com endpoint JSON e player para assistir ao vídeo selecionado no YouTube.">
+    <meta name="author" content="M-Square">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://m-square.mirandasoft.com.br/copa/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="M-Square">
+    <meta property="og:title" content="Copão — Links e Vídeos | M-Square">
+    <meta property="og:description" content="Assista ao vídeo do Copão no M-Square ou consuma o endpoint online.json.">
+    <meta property="og:url" content="https://m-square.mirandasoft.com.br/copa/">
+    <meta property="og:image" content="https://i.ytimg.com/vi/nLFPUeA-Naw/hqdefault.jpg">
+
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%2233%22 height=%22100%22 fill=%22%232980b9%22 rx=%226%22/><rect x=%2233.5%22 width=%2233%22 height=%22100%22 fill=%22%2327ae60%22 rx=%226%22/><rect x=%2267%22 width=%2233%22 height=%22100%22 fill=%22%23f39c12%22 rx=%226%22/></svg>">
+    <meta name="theme-color" content="#06131f">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.youtube.com">
+    <link rel="preconnect" href="https://i.ytimg.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="copa.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        "name": "Copão — Vídeo selecionado",
+        "description": "Vídeo do Copão disponível no M-Square.",
+        "thumbnailUrl": "https://i.ytimg.com/vi/nLFPUeA-Naw/hqdefault.jpg",
+        "embedUrl": "https://www.youtube.com/embed/nLFPUeA-Naw",
+        "contentUrl": "https://www.youtube.com/watch?v=nLFPUeA-Naw",
+        "uploadDate": "2026-06-22"
+    }
+    </script>
+</head>
+
+<body>
+    <main class="copa-shell">
+        <nav class="topbar" aria-label="Navegação principal">
+            <a href="/" class="brand" title="Voltar para M-Square">
+                <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <rect width="33" height="100" fill="#2980b9" rx="6" />
+                    <rect x="33.5" width="33" height="100" fill="#27ae60" rx="6" />
+                    <rect x="67" width="33" height="100" fill="#f39c12" rx="6" />
+                </svg>
+                <span>M-Square</span>
+            </a>
+            <a href="/" class="nav-link">Voltar</a>
+        </nav>
+
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Endpoint /copa/online.json</p>
+                <h1>Copão</h1>
+                <p class="lead">
+                    Link principal do Copão carregado em player e exposto em JSON para apps e integrações.
+                </p>
+
+                <div class="actions" aria-label="Links do Copão">
+                    <a class="btn btn-primary" href="https://www.youtube.com/watch?v=nLFPUeA-Naw" target="_blank"
+                        rel="noopener noreferrer">
+                        Abrir no YouTube
+                    </a>
+                    <a class="btn btn-secondary" href="/copa/online.json">
+                        Ver online.json
+                    </a>
+                    <a class="btn btn-secondary" href="/cinema/?v=nLFPUeA-Naw">
+                        Assistir no Cinema
+                    </a>
+                </div>
+            </div>
+
+            <div class="video-card">
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/nLFPUeA-Naw?autoplay=0&rel=0"
+                        title="Copão — vídeo no YouTube"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen loading="lazy"></iframe>
+                </div>
+                <div class="video-meta">
+                    <span>Endpoint ativo</span>
+                    <code>https://m-square.mirandasoft.com.br/copa/online.json</code>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>
+
