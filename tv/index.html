@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3QK6CR1BXY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-3QK6CR1BXY');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-Square TV — Playlist Multi-player | M-Square</title>
+    <meta name="description"
+        content="Assista a streams, vídeos MP4 e YouTube de forma alternável a qualquer momento na playlist de M-Square TV.">
+    <meta name="author" content="M-Square">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://m-square.mirandasoft.com.br/tv/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="M-Square">
+    <meta property="og:title" content="M-Square TV — Playlist Multi-player">
+    <meta property="og:description" content="Navegue e assista a múltiplos links de vídeo integrados de forma simples e imediata.">
+    <meta property="og:url" content="https://m-square.mirandasoft.com.br/tv/">
+    <meta property="og:image" content="https://m-square.mirandasoft.com.br/og-image.png">
+
+    <!-- Icons and Theme -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%2233%22 height=%22100%22 fill=%22%232980b9%22 rx=%226%22/><rect x=%2233.5%22 width=%2233%22 height=%22100%22 fill=%22%2327ae60%22 rx=%226%22/><rect x=%2267%22 width=%2233%22 height=%22100%22 fill=%22%23f39c12%22 rx=%226%22/></svg>">
+    <meta name="theme-color" content="#06131f">
+
+    <!-- Fonts and CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="tv.css">
+</head>
+
+<body>
+    <div class="tv-shell">
+        <!-- TOPBAR NAVIGATION -->
+        <nav class="topbar" aria-label="Navegação principal">
+            <a href="/" class="brand" title="Voltar para M-Square">
+                <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <rect width="33" height="100" fill="#2980b9" rx="6" />
+                    <rect x="33.5" width="33" height="100" fill="#27ae60" rx="6" />
+                    <rect x="67" width="33" height="100" fill="#f39c12" rx="6" />
+                </svg>
+                <span>M-Square TV</span>
+            </a>
+            <a href="/" class="nav-link" id="nav-back-home">Voltar para a Home</a>
+        </nav>
+
+        <!-- MAIN LAYOUT container -->
+        <main class="tv-layout" id="main-content">
+            <!-- PLAYER AREA -->
+            <section class="player-container" aria-label="Reprodutor de Vídeo">
+                <div class="video-card">
+                    <div class="video-frame" id="player-wrapper">
+                        <!-- Default state loader / placeholder -->
+                        <div class="video-loader" id="video-placeholder">
+                            <div class="spinner"></div>
+                            <p>Carregando playlist...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="video-info-bar">
+                    <div class="video-details">
+                        <span class="active-badge" id="media-type-badge">Carregando...</span>
+                        <h1 class="video-title" id="current-video-title">Selecione uma transmissão</h1>
+                        <p class="video-desc" id="current-video-desc">M-Square TV Player ao vivo</p>
+                    </div>
+                    <div class="video-actions">
+                        <a id="external-link-btn" class="btn btn-secondary" href="#" target="_blank" rel="noopener noreferrer">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            Abrir no Navegador
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SIDEBAR LIST OF CHANNELS -->
+            <aside class="sidebar-container" aria-label="Canais Disponíveis">
+                <div class="sidebar-header">
+                    <h2>📺 Canais / Links</h2>
+                    <p class="channel-count" id="channel-count-text">0 transmissões</p>
+                </div>
+
+                <!-- Live search filter -->
+                <div class="search-box">
+                    <input type="text" id="channel-search" placeholder="Filtrar canais..." aria-label="Filtrar canais">
+                    <span class="search-icon" aria-hidden="true">🔍</span>
+                </div>
+
+                <!-- Playlist list -->
+                <nav class="playlist-menu" id="channels-list" aria-label="Lista de canais">
+                    <!-- Loaded dynamically via JS -->
+                </nav>
+            </aside>
+        </main>
+    </div>
+
+    <!-- PLAYER CONTROLLER SCRIPT -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const playerWrapper = document.getElementById('player-wrapper');
+            const channelsListContainer = document.getElementById('channels-list');
+            const currentVideoTitle = document.getElementById('current-video-title');
+            const mediaTypeBadge = document.getElementById('media-type-badge');
+            const externalLinkBtn = document.getElementById('external-link-btn');
+            const searchInput = document.getElementById('channel-search');
+            const channelCountText = document.getElementById('channel-count-text');
+
+            let channels = [];
+            let activeUrl = localStorage.getItem('m_square_tv_active_url') || '';
+
+            // --- 1. Fetch Playlist JSON ---
+            async function loadPlaylist() {
+                try {
+                    const response = await fetch('list.json');
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    channels = await response.json();
+                    
+                    if (!Array.isArray(channels) || channels.length === 0) {
+                        showErrorMessage("Nenhuma transmissão encontrada na playlist.");
+                        return;
+                    }
+
+                    renderChannelsList(channels);
+                    
+                    // Start with stored channel or fall back to first channel in list
+                    const initialChannel = channels.find(c => c.url === activeUrl) || channels[0];
+                    playChannel(initialChannel);
+
+                } catch (error) {
+                    console.error("Error fetching playlist:", error);
+                    showErrorMessage("Não foi possível carregar a lista de canais.");
+                }
+            }
+
+            // --- 2. Render Channel Buttons ---
+            function renderChannelsList(list) {
+                channelsListContainer.innerHTML = '';
+                channelCountText.textContent = `${list.length} ${list.length === 1 ? 'transmissão' : 'transmissões'}`;
+
+                list.forEach((channel, index) => {
+                    const item = document.createElement('button');
+                    item.className = 'channel-item';
+                    item.id = `channel-btn-${index}`;
+                    item.setAttribute('type', 'button');
+                    
+                    if (channel.url === activeUrl) {
+                        item.classList.add('active');
+                    }
+
+                    // Platform Icon / Type Indicator
+                    const isYT = isYouTube(channel.url);
+                    const typeIcon = isYT ? '🔴' : '🌐';
+                    const platformLabel = isYT ? 'YouTube' : 'Direct Link';
+
+                    item.innerHTML = `
+                        <div class="channel-item-left">
+                            <span class="channel-icon">${typeIcon}</span>
+                            <div class="channel-info">
+                                <span class="channel-title">${escapeHTML(channel.title || `Canal ${index + 1}`)}</span>
+                                <span class="channel-platform">${platformLabel}</span>
+                            </div>
+                        </div>
+                        <span class="play-indicator">▶</span>
+                    `;
+
+                    item.addEventListener('click', () => {
+                        playChannel(channel);
+                    });
+
+                    channelsListContainer.appendChild(item);
+                });
+            }
+
+            // --- 3. Play Selected Channel ---
+            function playChannel(channel) {
+                activeUrl = channel.url;
+                localStorage.setItem('m_square_tv_active_url', activeUrl);
+
+                // Update active state in UI list
+                document.querySelectorAll('.channel-item').forEach((btn, idx) => {
+                    if (channels[idx] && channels[idx].url === activeUrl) {
+                        btn.classList.add('active');
+                        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+
+                // Update metadata display
+                currentVideoTitle.textContent = channel.title || 'Sem título';
+                const isYT = isYouTube(channel.url);
+                mediaTypeBadge.textContent = isYT ? 'YouTube' : 'Link Direto (MP4)';
+                mediaTypeBadge.className = isYT ? 'active-badge youtube' : 'active-badge native';
+                
+                externalLinkBtn.href = channel.url;
+
+                // Load appropriate player
+                if (isYT) {
+                    const ytId = extractYouTubeID(channel.url);
+                    if (ytId) {
+                        playerWrapper.innerHTML = `
+                            <iframe id="tv-iframe-player"
+                                src="https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0"
+                                title="${escapeHTML(channel.title)}"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                                allowfullscreen
+                                loading="lazy">
+                            </iframe>
+                        `;
+                        return;
+                    }
+                }
+
+                // If not youtube, treat as direct media link
+                playerWrapper.innerHTML = `
+                    <video id="tv-video-player" controls autoplay playsinline class="native-video-tag">
+                        <source src="${channel.url}" type="video/mp4">
+                        Seu navegador não suporta a tag de vídeo.
+                    </video>
+                `;
+            }
+
+            // --- 4. Helpers & Matchers ---
+            function isYouTube(url) {
+                if (!url) return false;
+                const lower = url.toLowerCase();
+                return lower.includes('youtube.com/') || lower.includes('youtu.be/');
+            }
+
+            function extractYouTubeID(url) {
+                const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[7].length === 11) ? match[7] : null;
+            }
+
+            // Simple HTML escape to prevent XSS
+            function escapeHTML(str) {
+                if (!str) return '';
+                return str.replace(/[&<>'"]/g, 
+                    tag => ({
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        "'": '&#39;',
+                        '"': '&quot;'
+                    }[tag] || tag)
+                );
+            }
+
+            function showErrorMessage(msg) {
+                playerWrapper.innerHTML = `
+                    <div class="video-error">
+                        <span class="error-icon">⚠️</span>
+                        <p>${escapeHTML(msg)}</p>
+                    </div>
+                `;
+            }
+
+            // --- 5. Filtering/Search logic ---
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                const filtered = channels.filter(channel => 
+                    (channel.title && channel.title.toLowerCase().includes(query)) ||
+                    (channel.url && channel.url.toLowerCase().includes(query))
+                );
+                
+                renderChannelsList(filtered);
+            });
+
+            // Run initialization
+            loadPlaylist();
+        });
+    </script>
+</body>
+
+</html>

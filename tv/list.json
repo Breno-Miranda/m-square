@@ -1,30 +1,22 @@
-{
-  "title": "Copao Aleatorio",
-  "videoUrl": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4",
-  "playbackMode": "random",
-  "embedAllowed": true,
-  "refreshSeconds": 30,
-  "links": [
-    {
-      "title": "Big Buck Bunny (MP4)",
-      "type": "mp4",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4"
-    },
-    {
-      "title": "Elephants Dream (MP4)",
-      "type": "mp4",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-    },
-    {
-      "title": "Sintel (MP4)",
-      "type": "mp4",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
-    },
-    {
-      "title": "Big Buck Bunny (YouTube)",
-      "type": "youtube",
-      "url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ"
-    }
-  ],
-  "updatedAt": "2026-06-22"
-}
+[
+  {
+    "title": "Big Buck Bunny (MP4)",
+    "type": "mp4",
+    "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4"
+  },
+  {
+    "title": "Elephants Dream (MP4)",
+    "type": "mp4",
+    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+  },
+  {
+    "title": "Sintel (MP4)",
+    "type": "mp4",
+    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+  },
+  {
+    "title": "Big Buck Bunny (YouTube)",
+    "type": "youtube",
+    "url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ"
+  }
+]
