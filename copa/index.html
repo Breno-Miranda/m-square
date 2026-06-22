@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Copão — Links e Vídeos | M-Square</title>
     <meta name="description"
-        content="Página Copão no M-Square com endpoint JSON e player para assistir ao vídeo selecionado no YouTube.">
+        content="Página Copão no M-Square com endpoint JSON e link externo para assistir ao vídeo selecionado no YouTube.">
     <meta name="author" content="M-Square">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://m-square.mirandasoft.com.br/copa/">
@@ -45,7 +45,6 @@
         "name": "Copão — Vídeo selecionado",
         "description": "Vídeo do Copão disponível no M-Square.",
         "thumbnailUrl": "https://i.ytimg.com/vi/nLFPUeA-Naw/hqdefault.jpg",
-        "embedUrl": "https://www.youtube.com/embed/nLFPUeA-Naw",
         "contentUrl": "https://www.youtube.com/watch?v=nLFPUeA-Naw",
         "uploadDate": "2026-06-22"
     }
@@ -71,7 +70,8 @@
                 <p class="eyebrow">Endpoint /copa/online.json</p>
                 <h1>Copão</h1>
                 <p class="lead">
-                    Link principal do Copão carregado em player e exposto em JSON para apps e integrações.
+                    Este vídeo não permite incorporação fora do YouTube. Mantemos o endpoint JSON ativo e abrimos o
+                    conteúdo direto no YouTube quando necessário.
                 </p>
 
                 <div class="actions" aria-label="Links do Copão">
@@ -89,12 +89,16 @@
             </div>
 
             <div class="video-card">
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/nLFPUeA-Naw?autoplay=0&rel=0"
-                        title="Copão — vídeo no YouTube"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowfullscreen loading="lazy"></iframe>
-                </div>
+                <a class="video-frame video-link" href="https://www.youtube.com/watch?v=nLFPUeA-Naw" target="_blank"
+                    rel="noopener noreferrer" aria-label="Abrir vídeo do Copão no YouTube">
+                    <img src="https://i.ytimg.com/vi/nLFPUeA-Naw/maxresdefault.jpg" alt="Capa do vídeo do Copão"
+                        loading="lazy">
+                    <span class="play-pill">
+                        <span class="play-icon" aria-hidden="true"></span>
+                        Assistir no YouTube
+                    </span>
+                    <span class="embed-warning">Exibição incorporada bloqueada pelo YouTube</span>
+                </a>
                 <div class="video-meta">
                     <span>Endpoint ativo</span>
                     <code>https://m-square.mirandasoft.com.br/copa/online.json</code>
@@ -105,4 +109,3 @@
 </body>
 
 </html>
-

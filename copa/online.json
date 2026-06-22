@@ -1,14 +1,15 @@
 {
   "title": "Copao",
-  "videoUrl": "https://www.youtube.com/watch?v=nLFPUeA-Naw",
+  "videoUrl": "https://www.youtube.com/watch?v=VurGeVBtbMg",
+  "playbackMode": "external",
+  "embedAllowed": false,
   "refreshSeconds": 30,
   "links": [
     {
       "title": "Copao - YouTube",
       "type": "youtube",
-      "url": "https://www.youtube.com/watch?v=nLFPUeA-Naw"
+      "url": "https://www.youtube.com/watch?v=VurGeVBtbMg"
     }
   ],
   "updatedAt": "2026-06-22"
 }
-

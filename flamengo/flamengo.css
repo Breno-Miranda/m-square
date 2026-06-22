@@ -569,12 +569,29 @@ body {
     border-radius: 12px;
     padding: 15px;
     min-height: 100px;
+    min-width: 0;
+    max-width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     contain: paint layout;
     isolation: isolate;
+}
+
+.ad-wrapper .adsbygoogle,
+.ad-wrapper .adsbygoogle > div,
+.ad-wrapper iframe[id^="aswift_"],
+.ad-wrapper iframe[id^="google_ads"],
+.ad-wrapper [id$="_host"] {
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow: hidden !important;
 }
 
 .ad-label {

@@ -253,6 +253,8 @@ body {
     margin-top: auto;
     width: 100%;
     min-height: 250px;
+    min-width: 0;
+    max-width: 100%;
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -261,6 +263,23 @@ body {
     justify-content: center;
     position: relative;
     overflow: hidden;
+    contain: layout paint;
+    isolation: isolate;
+}
+
+.ad-container .adsbygoogle,
+.ad-container .adsbygoogle > div,
+.ad-container iframe[id^="aswift_"],
+.ad-container iframe[id^="google_ads"],
+.ad-container [id$="_host"] {
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow: hidden !important;
 }
 
 .ad-label {
